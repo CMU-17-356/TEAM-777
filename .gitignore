@@ -1,0 +1,64 @@
+# ---- Python (Flask) ----
+
+# Virtual environment
+venv/
+.venv/
+
+# Python bytecode & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs and environment variables
+*.log
+.env
+.env.local
+.env.*.local
+
+# Flask-specific files
+instance/
+*.sqlite3
+*.db
+
+# ---- Node.js (React) ----
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+/build
+/dist
+/.parcel-cache
+/.next
+/out
+
+# Logs
+logs
+*.log
+yarn.lock
+pnpm-lock.yaml
+package-lock.json
+
+# Testing & coverage
+/coverage
+/jest-cache
+/jest-output
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---- Docker (if applicable) ----
+docker-compose.override.yml
+.dockerignore
+
+# ---- Misc ----
+/__pycache__/
