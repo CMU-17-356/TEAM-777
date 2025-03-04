@@ -8,19 +8,23 @@ import jsxA11y from "eslint-plugin-jsx-a11y";
 export default [
   js.configs.recommended,
   {
+    ignores: ["node_modules", "dist", "build"], // ✅ Correct placement
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
         project: "./tsconfig.json",
+        tsconfigRootDir: import.meta.dirname, // ✅ Ensures correct project root
       },
       globals: {
         console: true,
-        document: true, 
-        window: true,   
+        document: true,
+        window: true,
       },
     },
-    plugins: {
+    plugins: {  // ✅ CHANGE ARRAY TO OBJECT
       "@typescript-eslint": tseslint,
       "react": react,
       "react-hooks": reactHooks,
@@ -32,6 +36,5 @@ export default [
       "jsx-a11y/anchor-is-valid": "warn",
       "@typescript-eslint/no-unused-vars": "warn",
     },
-    ignores: ["node_modules", "dist", "build"],
   },
 ];
