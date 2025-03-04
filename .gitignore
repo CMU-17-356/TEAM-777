@@ -41,7 +41,6 @@ logs
 *.log
 yarn.lock
 pnpm-lock.yaml
-package-lock.json
 
 # Testing & coverage
 /coverage
