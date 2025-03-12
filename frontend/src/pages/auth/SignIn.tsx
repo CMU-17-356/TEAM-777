@@ -1,8 +1,8 @@
-
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./SignIn.css";
-import "font-awesome/css/font-awesome.min.css";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './SignIn.css';
+import 'font-awesome/css/font-awesome.min.css';
+import axios from 'axios';
 
 interface FormData {
   identifier: string;
@@ -15,17 +15,17 @@ interface Errors {
 }
 
 const SignIn: React.FC = () => {
-  const API_BASE_URL = "http://localhost:5001"; //backend route
+  const API_BASE_URL = 'http://localhost:5001'; //backend route
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState<FormData>({
-    identifier: "", 
-    password: "",
+    identifier: '',
+    password: '',
   });
 
   const [errors, setErrors] = useState<Errors>({
-    identifier: "",
-    password: "",
+    identifier: '',
+    password: '',
   });
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -37,20 +37,21 @@ const SignIn: React.FC = () => {
 
   const handleSignIn = async () => {
     setIsLoading(true);
-    setErrors({ identifier: "", password: "" });
+    setErrors({ identifier: '', password: '' });
 
-    let newErrors: Errors = { identifier: "", password: "" };
+    let newErrors: Errors = { identifier: '', password: '' };
 
     if (!formData.identifier) {
-      newErrors.identifier = "Email is required.";
-    } else if (!formData.identifier.includes("@")) {
-      newErrors.identifier = "Please enter a valid email.";
+      newErrors.identifier = 'Email is required.';
+    } else if (!formData.identifier.includes('@')) {
+      newErrors.identifier = 'Please enter a valid email.';
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required.";
+      newErrors.password = 'Password is required.';
     } else if (formData.password.length < 8) {
-      newErrors.password = "Invalid Password. Passwords must be 8 or more characters.";
+      newErrors.password =
+        'Invalid Password. Passwords must be 8 or more characters.';
     }
 
     if (newErrors.identifier || newErrors.password) {
@@ -60,29 +61,21 @@ const SignIn: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/login`, { // backend route for login
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const response = await axios.post(
+        `${API_BASE_URL}/login`,
+        {
+          // backend route
           identifier: formData.identifier,
           password: formData.password,
-        }),
-      });
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Invalid login credentials");
-      }
+      console.log('Login successful:', response.data);
 
-      const data: { token: string; userId: string } = await response.json();
-      console.log("Login successful:", data);
-
-      localStorage.setItem("sessionToken", data.token);
-      localStorage.setItem("userId", data.userId);
-      console.log(`Token received on frontend: ${localStorage.getItem("sessionToken")}`);
-      console.log(`User ID received: ${localStorage.getItem("userId")}`);
-
-      navigate("/group", { state: { userId: data.userId } });
+      navigate('/group', { state: { userId: response.data.userId } });
     } catch (error) {
       setErrors((prev) => ({ ...prev, password: (error as Error).message }));
     } finally {
@@ -93,8 +86,8 @@ const SignIn: React.FC = () => {
   return (
     <div className="signin-email-page">
       <div className="signin-form">
-      <h2>Log in to your Account</h2>
-      <label className="label">Email</label>
+        <h2>Log in to your Account</h2>
+        <label className="label">Email</label>
         <div className="signin-group-email">
           <input
             type="text"
@@ -103,12 +96,12 @@ const SignIn: React.FC = () => {
             name="identifier"
             placeholder="Enter your email"
             required
-            className={errors.identifier ? "input-error" : ""}
+            className={errors.identifier ? 'input-error' : ''}
           />
         </div>
         {errors.identifier && <p className="error-text">{errors.identifier}</p>}
 
-        <label className="label" >Password</label>
+        <label className="label">Password</label>
         <div className="signin-group-email">
           <input
             type="password"
@@ -117,7 +110,7 @@ const SignIn: React.FC = () => {
             name="password"
             placeholder="Enter your password"
             required
-            className={errors.password ? "input-error" : ""}
+            className={errors.password ? 'input-error' : ''}
           />
         </div>
         {errors.password && <p className="error-text">{errors.password}</p>}
@@ -128,15 +121,22 @@ const SignIn: React.FC = () => {
           </label>
         </div>
 
-        <button onClick={handleSignIn} disabled={isLoading} className="signin-button">
-          {isLoading ? "Signing In..." : "Sign In"}
+        <button
+          onClick={handleSignIn}
+          disabled={isLoading}
+          className="signin-button"
+        >
+          {isLoading ? 'Signing In...' : 'Sign In'}
         </button>
       </div>
 
       <div className="footer">
         <p className="footer-text">
-          Don't have an account?{" "}
-          <span className="create-account-link" onClick={() => navigate("/auth/register-email")}>
+          Don't have an account?{' '}
+          <span
+            className="create-account-link"
+            onClick={() => navigate('/auth/register-email')}
+          >
             Create new account
           </span>
         </p>
