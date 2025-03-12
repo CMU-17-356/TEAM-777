@@ -99,21 +99,7 @@ jobs:
         with:
           service-id: ${{ env.SRV_ID }}
           render-token: ${{ env.SRV_TK }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
           retries: 50
           wait: 3000
           sleep: 0
-
-      - name: Post PR Preview URL to GitHub
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const url = "https://team-777-pr-${{ github.event.pull_request.number }}.onrender.com";
-            github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              body: `🚀 PR Preview deployed: [View here](${url})`
-            });
