@@ -1,0 +1,75 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  frontend:
+    name: Lint & Format React Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Install system dependencies
+        run: sudo apt update && sudo apt install -y libcairo2-dev pkg-config
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Run ESLint
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: Run Prettier Check
+        run: |
+          cd frontend
+          npm run format
+
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm run build
+
+  backend:
+    name: Lint & Format Flask Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
+      
+      - name: Remove torch (if installed)
+        run: pip uninstall -y torch
+
+      - name: Install Dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Run Flake8 (Linting)
+        run: |
+          cd backend
+          flake8 .
+
+      - name: Run Black (Formatting Check)
+        run: |
+          cd backend
+          black --check .
