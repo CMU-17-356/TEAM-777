@@ -77,6 +77,7 @@ jobs:
   deploy:
     name: Render Deployment - auto-triggered by a ${{ github.event_name }}
     env: 
+      MONGO_URI: ${{ secrets.STAGING_DATABASE_URL }}
       SRV_ID: ${{ secrets.SRV_ID }}
       SRV_KEY: ${{ secrets.SRV_KEY }}
       SRV_TK: ${{ secrets.SRV_TK }}
@@ -109,7 +110,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const url = "https://pr-${{ github.event.pull_request.number }}.onrender.com";
+            const url = "https://team-777-pr-${{ github.event.pull_request.number }}.onrender.com";
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
