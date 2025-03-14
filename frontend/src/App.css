@@ -1,38 +1,98 @@
-.App {
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+body, html {
+  background-color: white;
+  margin: 0;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+input {
+  margin-top: 1vh;
+  width: 100%;
+  padding: 1vw;
+  border: 1px solid #ddd;
+  border-radius: 1vw;
+  background-color: #F1F1F1;
+  outline: none;
+  margin-bottom:3vh;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.5);
+  margin-right: 2vw;
+  margin-left: 2.3vw;
+  margin-top: 1.5vw;
+}
+
+input:focus {
+  border-color: black;
+}
+
+.input-error {
+  border: 2px solid #d32f2f;
+  margin-top:0;
+}
+
+.error-text {
+  color: #d32f2f;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 4vh;
+  margin-left: 4vw;
+}
+
+.label {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.checkbox-label {
+  font-weight: bold;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.file-upload-box {
+  width: 100%;
+  height: 20vh;
+  border: 2px dashed #686DB0;
+  border-radius: 2vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  margin-top:1vh;
+  margin-bottom: 3vh;
+  background-color: #FAFAFA;
+}
+
+.upload-icon {
+  font-size: 24px;
+  color: #686DB0;
+  margin-right: 1vw;
+}
+
+.upload-text {
+  font-size: 14px;
+  font-weight: bold;
+  color: #686DB0;
+}
+.footer {
+  position: fixed;
+  bottom: 0%;
+  width: 100%;
+  background-color: white;
+  cursor: pointer;
+  border-top: 0.2vh solid #F1F1F1;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.footer-text {
+  text-align: center;
+  font-weight: bold;
+  color: black;
+  margin-bottom: 8vh;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}

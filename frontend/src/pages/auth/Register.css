@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+body, html {
+    background-color: white;
+    margin: 0;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.register-email-page {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    height: 100vh;
+    width:100vw;
+    justify-content: center;
+    align-items: center;
+  }
+  
+h2 {
+    font-size: 24px;
+    margin-bottom: 2vh;
+    text-align: left;
+}
+  
+p {
+    color: #6c757d;
+    margin-bottom: 2vh;
+    text-align:left;
+}
+
+.register-form {
+    position: fixed;
+    bottom: 30%;
+    width: 90vw;
+    background-color: white;
+    cursor: pointer;
+    margin-left:5vw;
+    margin-right:5vw;
+
+}
+
+.register-group-email {
+    display: flex;
+    justify-content: flex-start;
+    font-size: 20px;
+    align-items: center;
+}
+
+  
+.register-button{
+    width: 90vw;
+    padding: 1vw;
+    margin-bottom: 1vw;
+    border: none;
+    border-radius: 1vw;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    background: #624a92;
+    cursor: pointer;
+}
+  
+  
+.create-account-link {
+    color: #624a92;
+    cursor: pointer;
+    font-weight: bold;
+}
+  
+input {
+  margin-top: 1vh;
+  width: 100%;
+  padding: 1vw;
+  border: 1px solid #ddd;
+  border-radius: 1vw;
+  background-color: #F1F1F1;
+  outline: none;
+  margin-bottom:10px;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.5);
+  margin-right: 2vw;
+  margin-left: 2.3vw;
+  margin-top: 1.5vw;
+}
+
+input:focus {
+  border-color: black;
+}
+
+.input-error {
+  border: 2px solid #d32f2f;
+  margin-top:0;
+}
+
+.error-text {
+  color: #d32f2f;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 4vh;
+  margin-left: 4vw;
+}
+
+.label {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0%;
+    width: 100%;
+    background-color: white;
+    cursor: pointer;
+    border-top: 0.2vh solid #F1F1F1;
+    text-align: center;
+}
+  
+.footer-text {
+    text-align: center;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 8vh;
+}
+  
