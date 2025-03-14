@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
 import SignIn from './pages/auth/SignIn';
+import Register from './pages/auth/Register';
 
 type ApiResponse = {
   message: string;
@@ -30,6 +31,7 @@ const App: React.FC = () => {
           }
         />
         <Route path="/auth/signin" element={<SignIn />} />
+        <Route path="/auth/register" element={<Register />} />
       </Routes>
     </Router>
   );

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SignIn.css';
-import 'font-awesome/css/font-awesome.min.css';
 import axios from 'axios';
 
 interface FormData {
@@ -135,7 +134,7 @@ const SignIn: React.FC = () => {
           Don't have an account?{' '}
           <span
             className="create-account-link"
-            onClick={() => navigate('/auth/register-email')}
+            onClick={() => navigate('/auth/register')}
           >
             Create new account
           </span>
