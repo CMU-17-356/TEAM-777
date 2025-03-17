@@ -24,8 +24,13 @@ def handle_login(db):
 
     if not identifier or not password:
         return (
-            jsonify({"success": False, "message": "Missing identifier \
-            or password"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": "Missing identifier \
+            or password",
+                }
+            ),
             400,
         )
 
@@ -35,8 +40,11 @@ def handle_login(db):
             print("no user")
             return (
                 jsonify(
-                    {"success": False, "message": "Invalid email or password, \
-                    no user"}
+                    {
+                        "success": False,
+                        "message": "Invalid email or password, \
+                    no user",
+                    }
                 ),
                 400,
             )

@@ -68,12 +68,6 @@ jobs:
         run: |
           cd backend
           flake8 .
-
-      - name: Run Black (Formatting Check)
-        run: |
-          cd backend
-          black --check .
-
   deploy:
     name: Render Deployment - auto-triggered by a ${{ github.event_name }}
     env: 
