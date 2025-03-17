@@ -4,6 +4,8 @@ from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 from pymongo import MongoClient
 from dotenv import load_dotenv  # Import dotenv to load environment variables
+from auth.signin import handle_login
+from auth.register import handle_register
 
 # Load environment variables from .env file (for local testing)
 load_dotenv()
@@ -54,6 +56,14 @@ def serve_react(path):
     if path != "" and os.path.exists(f"../frontend/build/{path}"):
         return send_from_directory("../frontend/build", path)
     return send_from_directory("../frontend/build", "index.html")
+
+@app.route('/auth/login', methods=['POST'])
+def login():
+    return handle_login(db)
+
+@app.route('/auth/register', methods=['POST'])
+def register():
+    return handle_register(db)
 
 
 if __name__ == "__main__":

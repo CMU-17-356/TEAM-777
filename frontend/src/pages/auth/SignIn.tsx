@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SignIn.css';
 import axios from 'axios';
+import App, { API_BASE_URL } from "../../App";
 
 interface FormData {
   identifier: string;
@@ -14,7 +15,6 @@ interface Errors {
 }
 
 const SignIn: React.FC = () => {
-  const API_BASE_URL = 'http://localhost:5001'; //backend route
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<FormData>({
@@ -61,7 +61,7 @@ const SignIn: React.FC = () => {
 
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/login`,
+        `${API_BASE_URL}/auth/login`,
         {
           // backend route
           identifier: formData.identifier,

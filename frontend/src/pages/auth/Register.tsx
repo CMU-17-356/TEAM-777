@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Register.css';
 import axios from 'axios';
+import App, { API_BASE_URL } from "../../App";
 
 interface FormData {
   username: string;
@@ -16,7 +17,6 @@ interface Errors {
 }
 
 const Register: React.FC = () => {
-  const API_BASE_URL = 'http://localhost:5001';
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     username: '',
@@ -68,10 +68,10 @@ const Register: React.FC = () => {
         const bodyContent = JSON.stringify(formData);
         console.log(`Body payload: \n ${bodyContent}`);
         const response = await axios.post(
-          `${API_BASE_URL}/register`,
+          `${API_BASE_URL}/auth/register`,
           {
             // backend route
-            usernamer: formData.username,
+            username: formData.username,
             email: formData.email,
             password: formData.password,
           },
