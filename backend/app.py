@@ -57,11 +57,11 @@ def serve_react(path):
         return send_from_directory("../frontend/build", path)
     return send_from_directory("../frontend/build", "index.html")
 
-@app.route('/auth/login', methods=['POST'])
+@app.route("/auth/login", methods=["POST"])
 def login():
     return handle_login(db)
 
-@app.route('/auth/register', methods=['POST'])
+@app.route("/auth/register", methods=["POST"])
 def register():
     return handle_register(db)
 
