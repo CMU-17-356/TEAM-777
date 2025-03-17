@@ -12,13 +12,13 @@ const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
 
   if (hostname.includes('pr-')) {
-    // ✅ PR Preview Environment (Modify the base URL format)
+    // PR Preview Environment (Modify the base URL format)
     return `https://${hostname}`;
   } else if (hostname.includes('team-777.onrender.com')) {
-    // ✅ Production Environment
+    // Production Environment
     return 'https://team-777.onrender.com';
   } else {
-    // ✅ Local Development
+    // Local Development
     return 'http://127.0.0.1:5000';
   }
 };
