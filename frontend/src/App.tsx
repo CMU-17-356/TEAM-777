@@ -11,21 +11,21 @@ type ApiResponse = {
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
 
-  if (hostname.includes("pr-")) {
+  if (hostname.includes('pr-')) {
     // ✅ PR Preview Environment (Modify the base URL format)
     return `https://${hostname}`;
-  } else if (hostname.includes("team-777.onrender.com")) {
+  } else if (hostname.includes('team-777.onrender.com')) {
     // ✅ Production Environment
-    return "https://team-777.onrender.com";
+    return 'https://team-777.onrender.com';
   } else {
     // ✅ Local Development
-    return "http://127.0.0.1:5000";
+    return 'http://127.0.0.1:5000';
   }
 };
 
 export const API_BASE_URL = getApiBaseUrl();
 
-console.log("API BASE URL:", API_BASE_URL);
+console.log('API BASE URL:', API_BASE_URL);
 
 const App: React.FC = () => {
   const [message, setMessage] = useState<string>('');

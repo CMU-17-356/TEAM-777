@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SignIn.css';
 import axios from 'axios';
-import App, { API_BASE_URL } from "../../App";
+import { API_BASE_URL } from '../../App';
 
 interface FormData {
   identifier: string;

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Register.css';
 import axios from 'axios';
-import App, { API_BASE_URL } from "../../App";
+import { API_BASE_URL } from '../../App';
 
 interface FormData {
   username: string;
