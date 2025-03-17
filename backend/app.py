@@ -57,9 +57,11 @@ def serve_react(path):
         return send_from_directory("../frontend/build", path)
     return send_from_directory("../frontend/build", "index.html")
 
+
 @app.route("/auth/login", methods=["POST"])
 def login():
     return handle_login(db)
+
 
 @app.route("/auth/register", methods=["POST"])
 def register():
@@ -67,4 +69,4 @@ def register():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5001)

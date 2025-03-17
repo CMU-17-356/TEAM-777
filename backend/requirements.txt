@@ -127,3 +127,5 @@ webcolors==24.11.1
 webencodings==0.5.1
 websocket-client==1.8.0
 wheel==0.45.1
+cryptography==44.0.2
+pyjwt==2.10.1

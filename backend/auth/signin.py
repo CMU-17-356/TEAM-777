@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
 from werkzeug.security import check_password_hash
 import jwt
 import datetime
@@ -19,21 +18,25 @@ def handle_login(db):
     password = data.get("password")
 
     print(
-        f"Authorization request received, \n identifier: {identifier} \n password: {password}"
+        f"Authorization request received, \n identifier: {identifier} \n \
+        password: {password}"
     )
 
     if not identifier or not password:
         return (
-            jsonify({"success": False, "message": "Missing identifier or password"}),
+            jsonify({"success": False, "message": "Missing identifier \
+            or password"}),
             400,
         )
 
     try:
-        user = db.users_login.find_one({"email": identifier})
+        user = db.users.find_one({"email": identifier})
         if not user:
+            print("no user")
             return (
                 jsonify(
-                    {"success": False, "message": "Invalid email or password, no user"}
+                    {"success": False, "message": "Invalid email or password, \
+                    no user"}
                 ),
                 400,
             )
@@ -43,7 +46,8 @@ def handle_login(db):
                 jsonify(
                     {
                         "success": False,
-                        "message": "Invalid email or password, password not match",
+                        "message": "Invalid email or password, password \
+                        not match",
                     }
                 ),
                 400,
