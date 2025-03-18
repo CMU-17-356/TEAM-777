@@ -70,7 +70,6 @@ jobs:
           flake8 .
   deploy:
     name: Render Deployment - auto-triggered by a ${{ github.event_name }}
-    if: false
     runs-on: ubuntu-latest
     steps:
       - run: echo "This job is disabled."
@@ -84,20 +83,20 @@ jobs:
       - frontend 
       - backend
     runs-on: ubuntu-latest
-    steps:
-      - run: echo "Job auto-triggered by a ${{ github.event_name }} event..."
-      - run: echo "Running on a ${{ runner.os }} server hosted by GitHub..."
-      - run: echo "For branch ${{ github.ref }} of repo ${{ github.repository }}..."
+    #steps:
+    #  - run: echo "Job auto-triggered by a ${{ github.event_name }} event..."
+    #  - run: echo "Running on a ${{ runner.os }} server hosted by GitHub..."
+    #  - run: echo "For branch ${{ github.ref }} of repo ${{ github.repository }}..."
 
-      - name: Issue a get request with Render deploy hook
-        run: curl "https://api.render.com/deploy/${{ env.SRV_ID }}?key=${{ env.SRV_KEY }}"
+    #  - name: Issue a get request with Render deploy hook
+    #    run: curl "https://api.render.com/deploy/${{ env.SRV_ID }}?key=${{ env.SRV_KEY }}"
 
-      - name: Deploying to Render...
-        uses: bounceapp/render-action@0.6.0
-        with:
-          service-id: ${{ env.SRV_ID }}
-          render-token: ${{ env.SRV_TK }}
-          github-token: ${{ github.token }}
-          retries: 50
-          wait: 3000
-          sleep: 0
+    #  - name: Deploying to Render...
+    #   uses: bounceapp/render-action@0.6.0
+    #   with:
+    #     service-id: ${{ env.SRV_ID }}
+    #     render-token: ${{ env.SRV_TK }}
+    #     github-token: ${{ github.token }}
+    #     retries: 50
+    #     wait: 3000
+    #     sleep: 0
