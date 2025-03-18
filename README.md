@@ -33,7 +33,6 @@ npm run format # Format with Prettier
 ## Backend Code formatting rules
 - After making any modifications in the backend, run the following command in backend folder:
 ```sh
-black . # Check and reformat for formmating issues
 flake8 . # Check for linting issues
 ```
 
