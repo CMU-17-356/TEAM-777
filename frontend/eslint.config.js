@@ -35,6 +35,7 @@ export default [
       "react/react-in-jsx-scope": "off",
       "jsx-a11y/anchor-is-valid": "warn",
       "@typescript-eslint/no-unused-vars": "warn",
+      'react-hooks/exhaustive-deps': 'error',
     },
   },
 ];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Input,
   Button,
@@ -42,8 +42,8 @@ const CreateGroupPage: React.FC = () => {
   const [editingGroupName, setEditingGroupName] = useState(false);
   const [editingAddress, setEditingAddress] = useState(false);
 
-  // Debounced user search
-  const handleSearch = debounce(async (query: string) => {
+  // Define the actual search logic
+  const handleSearchRaw = async (query: string) => {
     if (!query.trim()) return;
 
     try {
@@ -55,12 +55,20 @@ const CreateGroupPage: React.FC = () => {
     } catch (error) {
       console.error('Search error:', error);
     }
-  }, 400);
+  };
 
+  // Wrap with debounce only once using useMemo
+  const debouncedSearch = useMemo(
+    () => debounce(handleSearchRaw, 400),
+    [] // empty dependency array so it's stable
+  );
+
+  // Run the effect when searchInput changes
   useEffect(() => {
-    handleSearch(searchInput);
-    return () => handleSearch.cancel(); // cleanup debounce
-  }, [searchInput]);
+    debouncedSearch(searchInput);
+    return () => debouncedSearch.cancel(); // cleanup
+  }, [searchInput, debouncedSearch]);
+    
 
   const handleAddUser = (user: User) => {
     if (!addedUsers.find((u) => u.id === user.id)) {
