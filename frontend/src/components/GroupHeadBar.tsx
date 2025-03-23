@@ -20,7 +20,8 @@ const GroupHeaderBar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { userId, groupId } = (location.state as { userId?: string; groupId?: string }) || {};
+  const { groupId } =
+    (location.state as { userId?: string; groupId?: string }) || {};
   const [groupData, setGroupData] = useState<GroupData | null>(null);
 
   useEffect(() => {
@@ -28,7 +29,9 @@ const GroupHeaderBar: React.FC = () => {
 
     const fetchGroupInfo = async () => {
       try {
-        const response = await axios.post(`${API_BASE_URL}/api/groups/${groupId}`);
+        const response = await axios.post(
+          `${API_BASE_URL}/api/groups/${groupId}`,
+        );
         setGroupData(response.data);
       } catch (error) {
         console.error('Error fetching group data:', error);

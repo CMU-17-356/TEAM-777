@@ -21,7 +21,7 @@ def handle_login(db):
         f"Authorization request received, \n identifier: {identifier} \n \
         password: {password}"
     )
-    
+
     if not identifier or not password:
         return (
             jsonify(
@@ -34,7 +34,7 @@ def handle_login(db):
             400,
         )
     try:
-        user = db.users.find_one({"email": identifier}) # 
+        user = db.users.find_one({"email": identifier})
         print(type(identifier))
         if not user:
             print("no user")

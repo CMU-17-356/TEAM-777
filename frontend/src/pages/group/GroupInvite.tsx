@@ -116,7 +116,10 @@ const CreateGroupPage: React.FC = () => {
     };
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/group-create`, groupData);
+      const response = await axios.post(
+        `${API_BASE_URL}/api/group-create`,
+        groupData,
+      );
       console.log('Group created successfully:', response.data);
       navigate('/groups', { state: { userId } });
     } catch (error) {
@@ -197,8 +200,6 @@ const CreateGroupPage: React.FC = () => {
               )}
             </div>
 
-
-
             {/* Address (inline editable) */}
             <div
               style={{
@@ -231,8 +232,6 @@ const CreateGroupPage: React.FC = () => {
                 </>
               )}
             </div>
-
-
 
             {/* Search Dropdown */}
             <Dropdown

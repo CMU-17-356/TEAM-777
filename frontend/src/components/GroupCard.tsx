@@ -15,10 +15,7 @@ const GroupCard: React.FC<Props> = ({ group }) => {
   return (
     <Card style={{ marginBottom: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar
-          style={{ marginRight: 16 }}
-          icon={<UserOutlined />}
-        />
+        <Avatar style={{ marginRight: 16 }} icon={<UserOutlined />} />
         <div>
           <div style={{ fontWeight: 600 }}>{group.name}</div>
           {group.address && (
@@ -27,9 +24,7 @@ const GroupCard: React.FC<Props> = ({ group }) => {
           <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
             {visibleMembers.map((member) => (
               <Tooltip title={member.name} key={member.id}>
-                <Avatar
-                  style={{ backgroundColor: '#95de64' }}
-                >
+                <Avatar style={{ backgroundColor: '#95de64' }}>
                   {member.name
                     .split(' ')
                     .map((part) => part[0])

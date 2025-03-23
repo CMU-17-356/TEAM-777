@@ -3,6 +3,7 @@ from bson import ObjectId
 
 app = Flask(__name__)
 
+
 # Serialize group for output (without notes and creatorId)
 def serialize_group(group):
     return {
@@ -11,6 +12,7 @@ def serialize_group(group):
         "address": group["address"],
         "members": [str(member_id) for member_id in group["members"]],
     }
+
 
 # Group creation endpoint
 def create_group(db):
@@ -28,7 +30,12 @@ def create_group(db):
     address = data.get("address", "").strip()
     members = data.get("members", [])
 
-    if not group_name or not address or not isinstance(members, list) or len(members) == 0:
+    if (
+        not group_name
+        or not address
+        or not isinstance(members, list)
+        or len(members) == 0
+    ):
         return jsonify({"success": False, "message": "Missing required fields"}), 400
 
     try:
@@ -36,7 +43,9 @@ def create_group(db):
         member_object_ids = [
             ObjectId(member["id"])
             for member in members
-            if isinstance(member, dict) and "id" in member and ObjectId.is_valid(member["id"])
+            if isinstance(member, dict)
+            and "id" in member
+            and ObjectId.is_valid(member["id"])
         ]
 
         # Ensure creator is in the member list

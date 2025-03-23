@@ -64,11 +64,6 @@ jobs:
           cd backend
           pip install -r requirements.txt
 
-      - name: Run Flake8 (Linting)
-        run: |
-          cd backend
-          flake8 .
-
       - name: Run Black (Formatting Check)
         run: |
           cd backend

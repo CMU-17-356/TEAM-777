@@ -20,7 +20,10 @@ const GroupsPage: React.FC = () => {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await axios.post(`${API_BASE_URL}/api/groups-by-user`, { userId });
+        const response = await axios.post(
+          `${API_BASE_URL}/api/groups-by-user`,
+          { userId },
+        );
         setGroups(response.data.groups || []);
       } catch (error) {
         message.error('Failed to load groups');

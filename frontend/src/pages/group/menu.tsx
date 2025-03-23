@@ -6,7 +6,7 @@ import {
   ShoppingCartOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
-import { useLocation } from 'react-router-dom';
+//import { useLocation } from 'react-router-dom';
 import GroupHeaderBar from './../../components/GroupHeadBar';
 
 const { Text } = Typography;
@@ -27,8 +27,8 @@ const featureItems = [
 ];
 
 const MenuPage: React.FC = () => {
-  const location = useLocation();
-  const { userId, groupId } = (location.state as { userId: string; groupId: string });
+  //const location = useLocation();
+  //const { userId, groupId } = (location.state as { userId: string; groupId: string });
 
   return (
     <div style={{ backgroundColor: '#f9f8ff', minHeight: '100vh' }}>
@@ -37,7 +37,15 @@ const MenuPage: React.FC = () => {
         <GroupHeaderBar />
       </div>
 
-      <div style={{ marginTop: 24, padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div
+        style={{
+          marginTop: 24,
+          padding: '0 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+        }}
+      >
         {featureItems.map((item, index) => (
           <Card
             key={index}
@@ -97,7 +105,7 @@ const MenuPage: React.FC = () => {
         </div>
       </div>
     </div>
-      );
+  );
 };
 
 export default MenuPage;
