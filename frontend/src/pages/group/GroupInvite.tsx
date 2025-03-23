@@ -60,7 +60,7 @@ const CreateGroupPage: React.FC = () => {
   // Wrap with debounce only once using useMemo
   const debouncedSearch = useMemo(
     () => debounce(handleSearchRaw, 400),
-    [] // empty dependency array so it's stable
+    [], // empty dependency array so it's stable
   );
 
   // Run the effect when searchInput changes
@@ -68,7 +68,6 @@ const CreateGroupPage: React.FC = () => {
     debouncedSearch(searchInput);
     return () => debouncedSearch.cancel(); // cleanup
   }, [searchInput, debouncedSearch]);
-    
 
   const handleAddUser = (user: User) => {
     if (!addedUsers.find((u) => u.id === user.id)) {
