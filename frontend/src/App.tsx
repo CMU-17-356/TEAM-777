@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import SignIn from './pages/auth/SignIn';
 import Register from './pages/auth/Register';
@@ -44,15 +44,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <div>
-              <h1>Flask + React + TypeScript</h1>
-              <p>{message}</p>
-            </div>
-          }
-        />
+        <Route path="/" element={<Navigate to="/auth/signin" replace />} />
         <Route path="/auth/signin" element={<SignIn />} />
         <Route path="/auth/register" element={<Register />} />
         <Route path="/groups" element={<GroupsPage />} />
