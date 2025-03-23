@@ -21,7 +21,7 @@ def handle_login(db):
         f"Authorization request received, \n identifier: {identifier} \n \
         password: {password}"
     )
-
+    
     if not identifier or not password:
         return (
             jsonify(
@@ -33,9 +33,9 @@ def handle_login(db):
             ),
             400,
         )
-
     try:
-        user = db.users.find_one({"email": identifier})
+        user = db.users.find_one({"email": identifier}) # 
+        print(type(identifier))
         if not user:
             print("no user")
             return (
@@ -60,7 +60,6 @@ def handle_login(db):
                 ),
                 400,
             )
-
         payload = {
             "user": {
                 "id": str(user["_id"]),
@@ -71,7 +70,6 @@ def handle_login(db):
             + datetime.timedelta(hours=1),  # expire in 1 hour
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-
         print(f"Sending userId: {user['_id']}")
 
         return (
