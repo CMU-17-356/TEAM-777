@@ -33,8 +33,8 @@ const CreateGroupPage: React.FC = () => {
   const location = useLocation();
   const { userId } = location.state || {};
 
-  const [groupName, setGroupName] = useState('Group Name');
-  const [address, setAddress] = useState('House Address');
+  const [groupName, setGroupName] = useState('');
+  const [address, setAddress] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [notes, setNotes] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
@@ -178,13 +178,14 @@ const CreateGroupPage: React.FC = () => {
                   onChange={(e) => setGroupName(e.target.value)}
                   onPressEnter={() => setEditingGroupName(false)}
                   onBlur={() => setEditingGroupName(false)}
+                  placeholder="Your Group Name"
                   autoFocus
                   style={{ color: '#7D6DC2', fontWeight: 'bold' }}
                 />
               ) : (
                 <>
                   <Title level={5} style={{ margin: 0, color: '#7D6DC2' }}>
-                    {groupName === 'Group Name' ? 'Your Group Name' : `#${groupName}`}
+                    {groupName ? `#${groupName}` : 'Your Group Name'}
                   </Title>
                   <Button
                     type="text"
@@ -195,6 +196,7 @@ const CreateGroupPage: React.FC = () => {
                 </>
               )}
             </div>
+
 
 
             {/* Address (inline editable) */}
@@ -211,13 +213,14 @@ const CreateGroupPage: React.FC = () => {
                   onChange={(e) => setAddress(e.target.value)}
                   onPressEnter={() => setEditingAddress(false)}
                   onBlur={() => setEditingAddress(false)}
+                  placeholder="Your House Address"
                   autoFocus
                   style={{ color: '#7D6DC2', fontWeight: 'bold' }}
                 />
               ) : (
                 <>
                   <Title level={5} style={{ margin: 0, color: '#7D6DC2' }}>
-                    {address === 'House Address' ? 'Your House Address' : `#${address}`}
+                    {address ? `#${address}` : 'Your House Address'}
                   </Title>
                   <Button
                     type="text"
@@ -228,6 +231,7 @@ const CreateGroupPage: React.FC = () => {
                 </>
               )}
             </div>
+
 
 
             {/* Search Dropdown */}
