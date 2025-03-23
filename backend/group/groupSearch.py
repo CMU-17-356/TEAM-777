@@ -50,3 +50,47 @@ def groups_by_user(db):
         print("Error fetching groups:", str(e))
         return jsonify({ "success": False, "message": "Server error" }), 500
 
+def group_by_id(db, group_id):
+    if not group_id or not ObjectId.is_valid(group_id):
+        return jsonify({"success": False, "message": "Invalid group ID"}), 400
+
+    try:
+        pipeline = [
+            { "$match": { "_id": ObjectId(group_id) }},
+            {
+                "$lookup": {
+                    "from": "users",
+                    "localField": "members",
+                    "foreignField": "_id",
+                    "as": "memberDetails"
+                }
+            },
+            {
+                "$project": {
+                    "groupName": "$name",  # assuming name is the actual group name field
+                    "memberDetails.username": 1
+                }
+            }
+        ]
+
+        result = list(db.groups.aggregate(pipeline))
+
+        if not result:
+            return jsonify({"success": False, "message": "Group not found"}), 404
+
+        group = result[0]
+
+        response = {
+            "success": True,
+            "groupName": group.get("groupName", ""),
+            "members": [
+                { "username": member.get("username", "") }
+                for member in group.get("memberDetails", [])
+            ]
+        }
+
+        return jsonify(response), 200
+
+    except Exception as e:
+        print("Error fetching group:", str(e))
+        return jsonify({"success": False, "message": "Server error"}), 500

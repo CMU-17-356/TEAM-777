@@ -5,6 +5,7 @@ import SignIn from './pages/auth/SignIn';
 import Register from './pages/auth/Register';
 import GroupsPage from './pages/group/GroupsPage';
 import GroupInvite from './pages/group/GroupInvite';
+import Menu from './pages/group/menu';
 import { GroupSizeContext } from 'antd/es/button/button-group';
 
 type ApiResponse = {
@@ -56,6 +57,7 @@ const App: React.FC = () => {
         <Route path="/auth/register" element={<Register />} />
         <Route path="/groups" element={<GroupsPage />} />
         <Route path="/group-invite" element={<GroupInvite/>} />
+        <Route path="/menu" element={<Menu/>} />
       </Routes>
     </Router>
   );

@@ -32,3 +32,6 @@ def search_users(db):
     except Exception as e:
         print("Search error:", str(e))
         return jsonify({"success": False, "message": "Server error"}), 500
+
+
+

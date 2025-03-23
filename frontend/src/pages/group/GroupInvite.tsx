@@ -39,6 +39,8 @@ const CreateGroupPage: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [addedUsers, setAddedUsers] = useState<User[]>([]);
+  const [editingGroupName, setEditingGroupName] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(false);
 
   // Debounced user search
   const handleSearch = debounce(async (query: string) => {
@@ -127,78 +129,106 @@ const CreateGroupPage: React.FC = () => {
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      padding: '16px', 
-      backgroundColor: '#f9f8ff', 
-      minHeight: '100vh' 
-    }}>
-      <div style={{ width: '80%', maxWidth: 500 }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        padding: '40px 16px',
+        display: 'flex',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #f9f8ff 30%, #ece7fa 100%)',
+      }}
+    >
+      <div style={{ width: '90%', maxWidth: 600 }}>
         <div style={{ marginBottom: 100 }}>
-            <Button
-              type="text"
-              icon={<ArrowLeftOutlined />}
-              size="large"
-              style={{ color: '#7D6DC2' }}
-              onClick={() => navigate(-1)}
-            />
-          </div>
-        <Card 
-          style={{ 
-            borderRadius: 8, 
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)', 
-            backgroundColor: '#f3e8ff', 
-            padding: 24 
+          <Button
+            type="text"
+            icon={<ArrowLeftOutlined />}
+            size="large"
+            style={{
+              color: '#7D6DC2',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+            onClick={() => navigate(-1)}
+          >
+            <span style={{ marginLeft: 6 }}>Back</span>
+          </Button>
+        </div>
+        <Card
+          style={{
+            borderRadius: 12,
+            boxShadow: '0 8px 20px rgba(0,0,0,0.12)',
+            backgroundColor: '#ffffffee',
+            padding: 24,
           }}
         >
-          {/* Back Button */}
-          
-
-          <Space direction="vertical" style={{ width: '100%' }} size="middle">
-            {/* Group Name */}
-            <div 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between' 
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            {/* Group Name (inline editable) */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}
             >
-              <Title level={5} style={{ margin: 0, color: '#7D6DC2' }}>
-                #{groupName}
-              </Title>
-              <Button
-                type="text"
-                icon={<EditOutlined />}
-                style={{ color: '#7D6DC2' }}
-                onClick={() => {
-                  const name = prompt('Edit Group Name', groupName);
-                  if (name) setGroupName(name);
-                }}
-              />
+              {editingGroupName ? (
+                <Input
+                  value={groupName}
+                  onChange={(e) => setGroupName(e.target.value)}
+                  onPressEnter={() => setEditingGroupName(false)}
+                  onBlur={() => setEditingGroupName(false)}
+                  autoFocus
+                  style={{ color: '#7D6DC2', fontWeight: 'bold' }}
+                />
+              ) : (
+                <>
+                  <Title level={5} style={{ margin: 0, color: '#7D6DC2' }}>
+                    {groupName === 'Group Name' ? 'Your Group Name' : `#${groupName}`}
+                  </Title>
+                  <Button
+                    type="text"
+                    icon={<EditOutlined />}
+                    style={{ color: '#7D6DC2' }}
+                    onClick={() => setEditingGroupName(true)}
+                  />
+                </>
+              )}
             </div>
 
-            {/* Address */}
-            <div 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between' 
+
+            {/* Address (inline editable) */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}
             >
-              <Title level={5} style={{ margin: 0, color: '#7D6DC2' }}>
-                #{address}
-              </Title>
-              <Button
-                type="text"
-                icon={<EditOutlined />}
-                style={{ color: '#7D6DC2' }}
-                onClick={() => {
-                  const addr = prompt('Edit House Address', address);
-                  if (addr) setAddress(addr);
-                }}
-              />
+              {editingAddress ? (
+                <Input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  onPressEnter={() => setEditingAddress(false)}
+                  onBlur={() => setEditingAddress(false)}
+                  autoFocus
+                  style={{ color: '#7D6DC2', fontWeight: 'bold' }}
+                />
+              ) : (
+                <>
+                  <Title level={5} style={{ margin: 0, color: '#7D6DC2' }}>
+                    {address === 'House Address' ? 'Your House Address' : `#${address}`}
+                  </Title>
+                  <Button
+                    type="text"
+                    icon={<EditOutlined />}
+                    style={{ color: '#7D6DC2' }}
+                    onClick={() => setEditingAddress(true)}
+                  />
+                </>
+              )}
             </div>
+
 
             {/* Search Dropdown */}
             <Dropdown
@@ -220,38 +250,52 @@ const CreateGroupPage: React.FC = () => {
                 prefix={<SearchOutlined style={{ color: '#7D6DC2' }} />}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                style={{ width: '100%' }}
+                style={{
+                  width: '100%',
+                  borderRadius: 6,
+                }}
               />
             </Dropdown>
 
             {/* Selected Users */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', width: '100%' }}>
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                width: '100%',
+              }}
+            >
               {addedUsers.map((user) => (
                 <Tag
                   key={user.id}
                   closable
                   onClose={() => handleRemoveUser(user.id)}
-                  style={{ 
-                    padding: '6px 12px', 
-                    fontSize: '14px', 
-                    display: 'flex', 
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '14px',
+                    display: 'flex',
                     alignItems: 'center',
                     backgroundColor: '#f0f0ff',
                     borderColor: '#7D6DC2',
                     color: '#7D6DC2',
+                    borderRadius: 16,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
                   }}
                 >
-                  <Avatar 
-                    size="small" 
-                    style={{ 
-                      marginRight: 6, 
-                      backgroundColor: '#7D6DC2', 
-                      color: '#fff' 
+                  <Avatar
+                    size="small"
+                    style={{
+                      marginRight: 6,
+                      backgroundColor: '#7D6DC2',
+                      color: '#fff',
                     }}
                   >
                     {user.username.charAt(0).toUpperCase()}
                   </Avatar>
-                  <span>{user.username} ({user.email})</span>
+                  <span>
+                    {user.username} ({user.email})
+                  </span>
                 </Tag>
               ))}
             </div>
@@ -259,10 +303,14 @@ const CreateGroupPage: React.FC = () => {
             {/* Notes */}
             <Input.TextArea
               placeholder="Add group description... (optional)"
-              rows={5}
+              rows={4}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              style={{ width: '100%', resize: 'vertical' }}
+              style={{
+                width: '100%',
+                resize: 'vertical',
+                borderRadius: 6,
+              }}
             />
 
             {/* Create Group Button */}
@@ -270,10 +318,12 @@ const CreateGroupPage: React.FC = () => {
               type="primary"
               block
               size="large"
-              style={{ 
-                backgroundColor: '#7D6DC2', 
-                borderColor: '#7D6DC2', 
-                color: 'white' 
+              style={{
+                background: '#7D6DC2',
+                borderColor: '#7D6DC2',
+                color: 'white',
+                borderRadius: 6,
+                boxShadow: '0 3px 8px rgba(0,0,0,0.15)',
               }}
               onClick={handleCreateGroup}
             >

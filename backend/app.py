@@ -8,7 +8,7 @@ from auth.signin import handle_login
 from auth.register import handle_register
 from group.search import search_users    
 from group.groupinvite import create_group
-from group.groupbyuser import groups_by_user 
+from group.groupSearch import groups_by_user, group_by_id
 
 # Load environment variables from .env file (for local testing)
 load_dotenv()
@@ -81,6 +81,10 @@ def group_create():
 @app.route('/api/groups-by-user', methods=['POST'])
 def group_by_user():
     return groups_by_user(db)
+
+@app.route('/api/groups/<string:group_id>', methods=['POST'])
+def groups_by_id(group_id):
+    return group_by_id(db, group_id)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)
