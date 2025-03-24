@@ -70,7 +70,7 @@ def register():
 
 @app.route("/auth/billSplit", methods=["POST"])
 def add_expense():
-    return handle_add_expense()
+    return handle_add_expense(db)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)

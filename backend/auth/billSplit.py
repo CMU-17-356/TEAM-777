@@ -1,85 +1,129 @@
-from flask import Flask, request, jsonify
+from flask import request, jsonify
 import datetime
-import os
-from pymongo import MongoClient
-from dotenv import load_dotenv
 
-load_dotenv()
+def calculate_net_balances(balance_record):
+    """Calculate net balances for each person and minimize transactions."""
+    # Calculate net position for each person
+    net_positions = {}
+    for person in balance_record:
+        net_positions[person] = sum(balance_record[person].values())
+    
+    # Separate into receivers (positive) and payers (negative)
+    receivers = {p: v for p, v in net_positions.items() if v > 0}
+    payers = {p: v for p, v in net_positions.items() if v < 0}
+    
+    # Initialize minimized transactions
+    minimized_balances = {}
+    for person in balance_record:
+        minimized_balances[person] = {}
+    
+    # Match payers to receivers to minimize transactions
+    for payer, amount in payers.items():
+        remaining_amount = abs(amount)
+        for receiver, receive_amount in receivers.items():
+            if remaining_amount <= 0:
+                break
+            if receive_amount > 0:
+                transfer_amount = min(remaining_amount, receive_amount)
+                minimized_balances[payer][receiver] = transfer_amount
+                minimized_balances[receiver][payer] = -transfer_amount
+                remaining_amount -= transfer_amount
+                receivers[receiver] -= transfer_amount
+    
+    return minimized_balances
 
-app = Flask(__name__)
+def handle_add_expense(db):
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"success": False, "message": "No data provided"}), 400
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/mydatabase")
-client = MongoClient(MONGO_URI)
-db = client["DEV"]  # Change this to your database name
-collection = db["transactions"]  # Collection storing group transactions
-ledger_collection = db["balances"]  # Collection storing debt balances
+        # Validate required fields
+        required_fields = ["_id", "initiator", "splitters", "amount", "description"]
+        if not all(field in data for field in required_fields):
+            return jsonify({"success": False, "message": "Missing required fields"}), 400
 
-def update_balances(balance_record, new_transaction):
-    """Update balance ledger based on the new transaction."""
-    initiator = new_transaction["initiator"]
-    splitters = new_transaction["splitters"]
-    amount = new_transaction["amount"]
-    share = amount / len(splitters)  # Evenly split the expense
+        # Validate data types and values
+        if not isinstance(data["amount"], (int, float)) or data["amount"] <= 0:
+            return jsonify({"success": False, "message": "Amount must be a positive number"}), 400
+        
+        if not isinstance(data["splitters"], list) or len(data["splitters"]) == 0:
+            return jsonify({"success": False, "message": "Splitters must be a non-empty list"}), 400
 
-    if initiator not in balance_record:
-        balance_record[initiator] = {}
+        if not isinstance(data["initiator"], str) or not data["initiator"]:
+            return jsonify({"success": False, "message": "Initiator must be a non-empty string"}), 400
 
-    for person in splitters:
-        if person == initiator:
-            continue  # Skip the initiator paying themselves
+        group_id = data["_id"]
+        timestamp = datetime.datetime.utcnow().isoformat()
 
-        if person not in balance_record:
-            balance_record[person] = {}
+        new_transaction = {
+            "initiator": data["initiator"],
+            "splitters": data["splitters"],
+            "amount": float(data["amount"]),
+            "description": data["description"],
+            "timestamp": timestamp
+        }
 
-        # Update debt: person owes initiator
-        balance_record[person][initiator] = balance_record[person].get(initiator, 0) + share
-        balance_record[initiator][person] = balance_record[initiator].get(person, 0) - share
+        # Get collections from the provided db
+        collection = db["transactions"]
+        ledger_collection = db["balances"]
 
-    return balance_record
+        # Fetch existing transaction record
+        record = collection.find_one({"_id": group_id})
+        if not record:
+            record = {
+                "_id": group_id,
+                "history": {}
+            }
 
-def handle_add_expense():
-    data = request.json
+        # Add new transaction to history with content structure
+        transaction_id = str(len(record["history"]) + 1)
+        record["history"][transaction_id] = {
+            "content": new_transaction
+        }
 
-    # Validate required fields
-    required_fields = ["_id", "initiator", "splitters", "amount", "description"]
-    if not all(field in data for field in required_fields):
-        return jsonify({"success": False, "message": "Missing required fields"}), 400
+        # Fetch or initialize the balance ledger
+        balance_record = ledger_collection.find_one({"_id": group_id})
+        if not balance_record:
+            balance_record = {"_id": group_id, "balances": {}}
 
-    group_id = data["_id"]
-    timestamp = datetime.datetime.utcnow().isoformat()
+        # Update initial balances
+        initiator = new_transaction["initiator"]
+        splitters = new_transaction["splitters"]
+        amount = new_transaction["amount"]
+        share = amount / len(splitters)
 
-    new_transaction = {
-        "initiator": data["initiator"],
-        "splitters": data["splitters"],
-        "amount": data["amount"],
-        "description": data["description"],
-        "timestamp": timestamp,
-    }
+        if initiator not in balance_record["balances"]:
+            balance_record["balances"][initiator] = {}
 
-    # Fetch existing transaction record
-    record = collection.find_one({"_id": group_id})
-    if not record:
-        record = {"_id": group_id, "history": []}
+        for person in splitters:
+            if person == initiator:
+                continue
 
-    # Append new transaction to history
-    record["history"].append(new_transaction)
+            if person not in balance_record["balances"]:
+                balance_record["balances"][person] = {}
 
-    # Fetch or initialize the balance ledger
-    balance_record = ledger_collection.find_one({"_id": group_id})
-    if not balance_record:
-        balance_record = {"_id": group_id, "balances": {}}
+            # Update debt: person owes initiator
+            balance_record["balances"][person][initiator] = balance_record["balances"][person].get(initiator, 0) + share
+            balance_record["balances"][initiator][person] = balance_record["balances"][initiator].get(person, 0) - share
 
-    # Update balance record
-    updated_balances = update_balances(balance_record["balances"], new_transaction)
-    balance_record["balances"] = updated_balances
+        # Calculate minimized balances
+        minimized_balances = calculate_net_balances(balance_record["balances"])
+        balance_record["balances"] = minimized_balances
 
-    # Save updated records to the database
-    collection.update_one({"_id": group_id}, {"$set": record}, upsert=True)
-    ledger_collection.update_one({"_id": group_id}, {"$set": balance_record}, upsert=True)
+        # Save updated records to the database
+        collection.update_one({"_id": group_id}, {"$set": record}, upsert=True)
+        ledger_collection.update_one({"_id": group_id}, {"$set": balance_record}, upsert=True)
 
-    return jsonify({
-        "success": True,
-        "message": "Expense added successfully",
-        "updated_history": record["history"],
-        "updated_balances": updated_balances,
-    }), 200
+        return jsonify({
+            "success": True,
+            "message": "Expense added successfully",
+            "updated_history": record["history"],
+            "updated_balances": minimized_balances,
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"An error occurred: {str(e)}"
+        }), 500
