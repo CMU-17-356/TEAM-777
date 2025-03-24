@@ -83,12 +83,12 @@ jobs:
       - name: Issue a get request with Render deploy hook
         run: curl "https://api.render.com/deploy/${{ env.SRV_ID }}?key=${{ env.SRV_KEY }}"
 
-      - name: Deploying to Render...
-        uses: bounceapp/render-action@0.6.0
-        with:
-          service-id: ${{ env.SRV_ID }}
-          render-token: ${{ env.SRV_TK }}
-          github-token: ${{ github.token }}
-          retries: 50
-          wait: 3000
-          sleep: 0
+      # - name: Deploying to Render...
+      #   uses: bounceapp/render-action@0.6.0
+      #   with:
+      #     service-id: ${{ env.SRV_ID }}
+      #     render-token: ${{ env.SRV_TK }}
+      #     github-token: ${{ github.token }}
+      #     retries: 50
+      #     wait: 3000
+      #     sleep: 0
