@@ -3,8 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - '**'  # This will trigger on all branch pushes
   pull_request:
+    branches:
+      - '**'  # This will trigger on PRs to any branch
 
 jobs:
   frontend:
