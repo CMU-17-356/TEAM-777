@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from dotenv import load_dotenv  # Import dotenv to load environment variables
 from auth.signin import handle_login
 from auth.register import handle_register
+from auth.billSplit import handle_add_expense
 
 # Load environment variables from .env file (for local testing)
 load_dotenv()
@@ -67,6 +68,9 @@ def login():
 def register():
     return handle_register(db)
 
+@app.route("/auth/billSplit", methods=["POST"])
+def add_expense():
+    return handle_add_expense()
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)
