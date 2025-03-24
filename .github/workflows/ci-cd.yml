@@ -3,10 +3,8 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - '**'  # This will trigger on all branch pushes
+      - '**'
   pull_request:
-    branches:
-      - '**'  # This will trigger on PRs to any branch
 
 jobs:
   frontend:
@@ -29,22 +27,18 @@ jobs:
         run: |
           cd frontend
           npm install
-
       - name: Run ESLint
         run: |
           cd frontend
           npm run lint
-
       - name: Run Prettier Check
         run: |
           cd frontend
           npm run format
-
       - name: Build Frontend
         run: |
           cd frontend
           npm run build
-
   backend:
     name: Lint & Format Flask Backend
     runs-on: ubuntu-latest
@@ -65,29 +59,31 @@ jobs:
         run: |
           cd backend
           pip install -r requirements.txt
-
-      - name: Run Flake8 (Linting)
+      - name: Run Black (Formatting Check)
         run: |
           cd backend
-          flake8 .
-
+          black --check .
   deploy:
     name: Render Deployment - auto-triggered by a ${{ github.event_name }}
-    runs-on: ubuntu-latest
     env: 
       MONGO_URI: ${{ secrets.STAGING_DATABASE_URL }}
       SRV_ID: ${{ secrets.SRV_ID }}
       SRV_KEY: ${{ secrets.SRV_KEY }}
       SRV_TK: ${{ secrets.SRV_TK }}
-    if: github.event_name == 'push'||github.event_name == 'pull_request'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     needs: 
       - frontend 
       - backend
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      
-      - name: Deploy to Render
+      - run: echo "Job auto-triggered by a ${{ github.event_name }} event..."
+      - run: echo "Running on a ${{ runner.os }} server hosted by GitHub..."
+      - run: echo "For branch ${{ github.ref }} of repo ${{ github.repository }}..."
+
+      - name: Issue a get request with Render deploy hook
+        run: curl "https://api.render.com/deploy/${{ env.SRV_ID }}?key=${{ env.SRV_KEY }}"
+
+      - name: Deploying to Render...
         uses: bounceapp/render-action@0.6.0
         with:
           service-id: ${{ env.SRV_ID }}
