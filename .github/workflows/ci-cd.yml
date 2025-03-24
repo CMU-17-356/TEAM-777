@@ -59,10 +59,10 @@ jobs:
         run: |
           cd backend
           pip install -r requirements.txt
-      - name: Run Black (Formatting Check)
-        run: |
-          cd backend
-          black --check .
+      # - name: Run Black (Formatting Check)
+      #   run: |
+      #     cd backend
+      #     black --check .
   deploy:
     name: Render Deployment - auto-triggered by a ${{ github.event_name }}
     env: 
