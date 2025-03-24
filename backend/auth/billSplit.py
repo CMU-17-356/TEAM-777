@@ -4,9 +4,9 @@ import datetime
 
 def calculate_net_balances(balance_record):
     """Calculate net balances for each person and minimize transactions."""
-    net_positions = {
-        p: sum(b.values()) for p, b in balance_record.items()
-    }
+    net_positions = {}
+    for p, b in balance_record.items():
+        net_positions[p] = sum(b.values())
 
     receivers = {p: v for p, v in net_positions.items() if v > 0}
     payers = {p: v for p, v in net_positions.items() if v < 0}
@@ -38,7 +38,13 @@ def handle_add_expense(db):
                 "message": "No data provided"
             }), 400
 
-        required_fields = ["_id", "initiator", "splitters", "amount", "description"]
+        required_fields = [
+            "_id",
+            "initiator",
+            "splitters",
+            "amount",
+            "description"
+        ]
         if not all(field in data for field in required_fields):
             return jsonify({
                 "success": False,
@@ -133,3 +139,4 @@ def handle_add_expense(db):
             "success": False,
             "message": f"An error occurred: {str(e)}"
         }), 500
+    
