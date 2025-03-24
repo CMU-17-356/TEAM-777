@@ -82,7 +82,7 @@ jobs:
     needs: 
       - frontend 
       - backend
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
     #steps:
     #  - run: echo "Job auto-triggered by a ${{ github.event_name }} event..."
     #  - run: echo "Running on a ${{ runner.os }} server hosted by GitHub..."
