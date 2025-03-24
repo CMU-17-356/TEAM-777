@@ -139,4 +139,3 @@ def handle_add_expense(db):
             "success": False,
             "message": f"An error occurred: {str(e)}"
         }), 500
-    
