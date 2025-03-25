@@ -6,6 +6,9 @@ from pymongo import MongoClient
 from dotenv import load_dotenv  # Import dotenv to load environment variables
 from auth.signin import handle_login
 from auth.register import handle_register
+from group.search import search_users
+from group.groupinvite import create_group
+from group.groupSearch import groups_by_user, group_by_id
 
 # Load environment variables from .env file (for local testing)
 load_dotenv()
@@ -66,6 +69,26 @@ def login():
 @app.route("/auth/register", methods=["POST"])
 def register():
     return handle_register(db)
+
+
+@app.route("/api/search-users", methods=["GET"])
+def search():
+    return search_users(db)
+
+
+@app.route("/api/group-create", methods=["POST"])
+def group_create():
+    return create_group(db)
+
+
+@app.route("/api/groups-by-user", methods=["POST"])
+def group_by_user():
+    return groups_by_user(db)
+
+
+@app.route("/api/groups/<string:group_id>", methods=["POST"])
+def groups_by_id(group_id):
+    return group_by_id(db, group_id)
 
 
 if __name__ == "__main__":

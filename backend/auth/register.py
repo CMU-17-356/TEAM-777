@@ -55,10 +55,7 @@ def handle_register(db):
 
         hashed_password = generate_password_hash(password)
 
-        new_user = {
-            "username": username,
-            "email": email,
-            "password": hashed_password}
+        new_user = {"username": username, "email": email, "password": hashed_password}
         db.users.insert_one(new_user)
 
         print("Insert successful:", new_user)

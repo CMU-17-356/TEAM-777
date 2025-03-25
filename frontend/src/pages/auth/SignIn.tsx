@@ -74,7 +74,7 @@ const SignIn: React.FC = () => {
 
       console.log('Login successful:', response.data);
 
-      navigate('/group', { state: { userId: response.data.userId } });
+      navigate('/groups', { state: { userId: response.data.userId } });
     } catch (error) {
       setErrors((prev) => ({ ...prev, password: (error as Error).message }));
     } finally {

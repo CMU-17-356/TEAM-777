@@ -1,12 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import axios from 'axios';
+import React from 'react';
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
+//import axios from 'axios';
 import SignIn from './pages/auth/SignIn';
 import Register from './pages/auth/Register';
+import GroupsPage from './pages/group/GroupsPage';
+import GroupInvite from './pages/group/GroupInvite';
+import Menu from './pages/group/menu';
+//import { GroupSizeContext } from 'antd/es/button/button-group';
 
-type ApiResponse = {
-  message: string;
-};
+// type ApiResponse = {
+//   message: string;
+// };
 
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
@@ -28,29 +37,24 @@ export const API_BASE_URL = getApiBaseUrl();
 console.log('API BASE URL:', API_BASE_URL);
 
 const App: React.FC = () => {
-  const [message, setMessage] = useState<string>('');
+  //const [message, setMessage] = useState<string>('');
 
-  useEffect(() => {
-    axios
-      .get<ApiResponse>(`${API_BASE_URL}/api/get`)
-      .then((response) => setMessage(response.data.message))
-      .catch((error) => console.error('Error fetching data:', error));
-  }, []);
+  // useEffect(() => {
+  //   axios
+  //     .get<ApiResponse>(`${API_BASE_URL}/api/get`)
+  //     .then((response) => setMessage(response.data.message))
+  //     .catch((error) => console.error('Error fetching data:', error));
+  // }, []);
 
   return (
     <Router>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <div>
-              <h1>Flask + React + TypeScript</h1>
-              <p>{message}</p>
-            </div>
-          }
-        />
+        <Route path="/" element={<Navigate to="/auth/signin" replace />} />
         <Route path="/auth/signin" element={<SignIn />} />
         <Route path="/auth/register" element={<Register />} />
+        <Route path="/groups" element={<GroupsPage />} />
+        <Route path="/group-invite" element={<GroupInvite />} />
+        <Route path="/menu" element={<Menu />} />
       </Routes>
     </Router>
   );
