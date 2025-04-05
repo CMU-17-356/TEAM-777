@@ -32,6 +32,7 @@ export default [
     },
     rules: {
       "react/jsx-uses-react": "off",
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       "react/react-in-jsx-scope": "off",
       "jsx-a11y/anchor-is-valid": "warn",
       "@typescript-eslint/no-unused-vars": "warn",

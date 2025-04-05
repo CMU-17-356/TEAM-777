@@ -11,11 +11,7 @@ import Register from './pages/auth/Register';
 import GroupsPage from './pages/group/GroupsPage';
 import GroupInvite from './pages/group/GroupInvite';
 import Menu from './pages/group/menu';
-//import { GroupSizeContext } from 'antd/es/button/button-group';
-
-// type ApiResponse = {
-//   message: string;
-// };
+import Calendar from './pages/calendar/CalendarPage';
 
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
@@ -37,15 +33,6 @@ export const API_BASE_URL = getApiBaseUrl();
 console.log('API BASE URL:', API_BASE_URL);
 
 const App: React.FC = () => {
-  //const [message, setMessage] = useState<string>('');
-
-  // useEffect(() => {
-  //   axios
-  //     .get<ApiResponse>(`${API_BASE_URL}/api/get`)
-  //     .then((response) => setMessage(response.data.message))
-  //     .catch((error) => console.error('Error fetching data:', error));
-  // }, []);
-
   return (
     <Router>
       <Routes>
@@ -55,6 +42,7 @@ const App: React.FC = () => {
         <Route path="/groups" element={<GroupsPage />} />
         <Route path="/group-invite" element={<GroupInvite />} />
         <Route path="/menu" element={<Menu />} />
+        <Route path="/calendar" element={<Calendar />} />
       </Routes>
     </Router>
   );
