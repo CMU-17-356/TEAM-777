@@ -27,7 +27,6 @@ p {
     font-size: 16px;
     font-weight: bold;
     background: #624a92;
-    cursor: pointer;
 }
   
   
@@ -63,7 +62,7 @@ p {
     width: 100%;
     background-color: linear-gradient(135deg, #f9f8ff 0%, #ece7fa 100%);
     cursor: pointer;
-    border-top: 0.2vh solid rgb(222, 185, 235);
+    border-top: 0.2vh solid #624a92;
     text-align: center;
 }
   

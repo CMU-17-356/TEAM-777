@@ -136,6 +136,9 @@ const SignIn: React.FC = () => {
           <label className="checkbox-label">
             <input type="checkbox" /> Remember me
           </label>
+          <span style={{color: '#624a92', fontSize: 14, textDecoration: 'underline', alignItems: 'center'}}
+           onClick={() => navigate('/auth/reset-password')}
+          >Forgot Password?</span>
         </div>
 
         <button

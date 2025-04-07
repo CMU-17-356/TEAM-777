@@ -82,7 +82,6 @@ const Register: React.FC = () => {
 
         if (response.data.success) {
           console.log('User registered successfully.');
-          navigate('/auth/signin');
         } else {
           console.error('Registration failed:', response.data.message);
         }

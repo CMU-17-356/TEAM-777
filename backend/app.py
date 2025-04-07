@@ -6,6 +6,9 @@ from pymongo import MongoClient
 from dotenv import load_dotenv  # Import dotenv to load environment variables
 from auth.signin import handle_login
 from auth.register import handle_register
+from auth.verifyEmail import handle_verify_email
+from auth.resetPassword import handle_reset_password
+from auth.changePassword import handle_change_password
 from group.search import search_users
 from group.groupinvite import create_group
 from group.groupSearch import groups_by_user, group_by_id
@@ -30,6 +33,18 @@ db = client["DEV"]  # Change "mydatabase" to your database name
 collection = db["TEST"]  # Change "mycollection" to your collection name
 print("MONGO_URI =", os.getenv("MONGO_URI"))
 
+
+def get_api_base_url():
+    hostname = request.host  # request.host returns the hostname (and port if present)
+    if 'pr-' in hostname:
+        # PR Preview Environment
+        return f"https://{hostname}:3001"
+    elif 'team-777.onrender.com' in hostname:
+        # Production Environment
+        return 'https://team-777.onrender.com'
+    else:
+        # Local Development
+        return 'http://127.0.0.1:3001/#'
 
 # API to insert data into MongoDB
 @app.route("/api/add", methods=["POST"])
@@ -68,8 +83,19 @@ def login():
 
 @app.route("/auth/register", methods=["POST"])
 def register():
-    return handle_register(db)
+    return handle_register(db, get_api_base_url())
 
+@app.route("/auth/verify-email", methods=["POST"])
+def verifyEmail():
+    return handle_verify_email(db)
+
+@app.route("/auth/reset-password", methods=["POST"])
+def resetPassword():
+    return handle_reset_password(db, get_api_base_url())
+
+@app.route("/auth/change-password", methods=["POST"])
+def changePassword():
+    return handle_change_password(db)
 
 @app.route("/api/search-users", methods=["GET"])
 def search():
