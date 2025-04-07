@@ -6,27 +6,32 @@ import {
   ShoppingCartOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
-//import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import GroupHeaderBar from './../../components/GroupHeadBar';
-
-const { Text } = Typography;
 
 const featureItems = [
   {
     title: 'Bill Management',
     icon: <DollarOutlined style={{ fontSize: 24, color: '#7D6DC2' }} />,
+    path: '/bills',
   },
   {
     title: 'Calendar',
     icon: <CalendarOutlined style={{ fontSize: 24, color: '#7D6DC2' }} />,
+    path: '/calendar',
   },
   {
     title: 'Grocery',
     icon: <ShoppingCartOutlined style={{ fontSize: 24, color: '#7D6DC2' }} />,
+    path: '/grocery',
   },
 ];
 
 const MenuPage: React.FC = () => {
+  const { Text } = Typography;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { userId, groupId } = location.state || {};
   //const location = useLocation();
   //const { userId, groupId } = (location.state as { userId: string; groupId: string });
 
@@ -49,6 +54,8 @@ const MenuPage: React.FC = () => {
         {featureItems.map((item, index) => (
           <Card
             key={index}
+            onClick={() => navigate(item.path, { state: { userId, groupId } })}
+            hoverable
             style={{
               display: 'flex',
               alignItems: 'center',

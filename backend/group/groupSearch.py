@@ -101,3 +101,33 @@ def group_by_id(db, group_id):
     except Exception as e:
         print("Error fetching group:", str(e))
         return jsonify({"success": False, "message": "Server error"}), 500
+
+
+def get_users_in_group(db, group_id):
+    if not group_id or not ObjectId.is_valid(group_id):
+        return jsonify({"success": False, "message": "Invalid group ID"}), 400
+
+    try:
+        group = db.groups.find_one({"_id": ObjectId(group_id)})
+
+        if not group:
+            return jsonify({"success": False, "message": "Group not found"}), 404
+
+        member_ids = group.get("members", [])
+        users_cursor = db.users.find({"_id": {"$in": member_ids}})
+
+        users = [
+            {
+                "id": str(user["_id"]),
+                "username": user.get("username", ""),
+                "email": user.get("email", ""),
+                "name": user.get("name", ""),
+            }
+            for user in users_cursor
+        ]
+
+        return jsonify({"success": True, "users": users}), 200
+
+    except Exception as e:
+        print("Error fetching users in group:", str(e))
+        return jsonify({"success": False, "message": "Server error"}), 500

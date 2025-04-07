@@ -8,7 +8,8 @@ from auth.signin import handle_login
 from auth.register import handle_register
 from group.search import search_users
 from group.groupinvite import create_group
-from group.groupSearch import groups_by_user, group_by_id
+from group.groupSearch import groups_by_user, group_by_id, get_users_in_group
+from calendars.event import create_event, delete_event, edit_event, get_events
 
 # Load environment variables from .env file (for local testing)
 load_dotenv()
@@ -19,8 +20,8 @@ if not os.path.exists("../frontend/build"):
     subprocess.run(["npm", "run", "build"], cwd="../frontend")
 
 app = Flask(__name__, static_folder="../frontend/build")
-CORS(app)  # Enable CORS for frontend requests
-
+# CORS(app, resources={r"/api/*": {"origins": "*"}})  # Enable CORS for frontend requests
+CORS(app)
 # Connect to MongoDB using environment variable
 MONGO_URI = os.getenv(
     "MONGO_URI", "mongodb://localhost:27017/mydatabase"
@@ -89,6 +90,41 @@ def group_by_user():
 @app.route("/api/groups/<string:group_id>", methods=["POST"])
 def groups_by_id(group_id):
     return group_by_id(db, group_id)
+
+
+@app.route("/api/users/<string:group_id>", methods=["GET"])
+def users_by_groupid(group_id):
+    return get_users_in_group(db, group_id)
+
+
+@app.route("/api/events", methods=["POST"])
+def handle_create_event():
+    data = request.get_json()
+    group_id = data.get("group_id")
+    return create_event(db, group_id)
+
+
+@app.route("/api/events/<string:group_id>", methods=["GET"])
+def handle_get_event(group_id):
+    return get_events(db, group_id)
+
+
+@app.route(
+    "/api/events/<string:group_id>/<string:event_id>", methods=["PATCH", "OPTIONS"]
+)
+def handle_edit_event(group_id, event_id):
+    if request.method == "OPTIONS":
+        return "", 204
+    return edit_event(db, group_id, event_id)
+
+
+@app.route(
+    "/api/events/<string:group_id>/<string:event_id>", methods=["DELETE", "OPTIONS"]
+)
+def handle_delete_event(group_id, event_id):
+    if request.method == "OPTIONS":
+        return "", 204
+    return delete_event(db, group_id, event_id)
 
 
 if __name__ == "__main__":
