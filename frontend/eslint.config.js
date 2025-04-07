@@ -22,6 +22,10 @@ export default [
         console: true,
         document: true,
         window: true,
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
       },
     },
     plugins: {  // ✅ CHANGE ARRAY TO OBJECT

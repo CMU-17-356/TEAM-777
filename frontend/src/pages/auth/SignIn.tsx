@@ -83,11 +83,19 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <div className="signin-email-page">
+    <div
+      style={{
+        background: 'linear-gradient(135deg, #f9f8ff 0%, #ece7fa 100%)',
+        minHeight: '100vh',
+        padding: '40px 0px',
+      }}
+    >
       <div className="signin-form">
-        <h2>Log in to your Account</h2>
-        <label className="label">Email</label>
-        <div className="signin-group-email">
+        <h2 style={{ fontSize: 28, marginBottom: 30 }}>
+          Log in to your Account
+        </h2>
+        <div>
+          <label className="label">Email</label>
           <input
             type="text"
             value={formData.identifier}
@@ -96,12 +104,21 @@ const SignIn: React.FC = () => {
             placeholder="Enter your email"
             required
             className={errors.identifier ? 'input-error' : ''}
+            style={{
+              marginBottom: 10,
+              marginTop: 5,
+              backgroundColor: 'white',
+              borderColor: '#ddd',
+              borderRadius: 10,
+              fontSize: 16,
+              padding: 10,
+            }}
           />
         </div>
         {errors.identifier && <p className="error-text">{errors.identifier}</p>}
 
-        <label className="label">Password</label>
-        <div className="signin-group-email">
+        <div>
+          <label className="label">Password</label>
           <input
             type="password"
             value={formData.password}
@@ -110,6 +127,15 @@ const SignIn: React.FC = () => {
             placeholder="Enter your password"
             required
             className={errors.password ? 'input-error' : ''}
+            style={{
+              marginBottom: 10,
+              marginTop: 5,
+              backgroundColor: 'white',
+              borderColor: '#ddd',
+              borderRadius: 10,
+              fontSize: 16,
+              padding: 10,
+            }}
           />
         </div>
         {errors.password && <p className="error-text">{errors.password}</p>}
@@ -118,6 +144,17 @@ const SignIn: React.FC = () => {
           <label className="checkbox-label">
             <input type="checkbox" /> Remember me
           </label>
+          <span
+            style={{
+              color: '#624a92',
+              fontSize: 14,
+              textDecoration: 'underline',
+              alignItems: 'center',
+            }}
+            onClick={() => navigate('/auth/reset-password')}
+          >
+            Forgot Password?
+          </span>
         </div>
 
         <button

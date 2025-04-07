@@ -8,6 +8,9 @@ import {
 //import axios from 'axios';
 import SignIn from './pages/auth/SignIn';
 import Register from './pages/auth/Register';
+import VerifyEmail from './pages/auth/VerifyEmail';
+import ResetPassword from './pages/auth/ResetPassword';
+import ChangePassword from './pages/auth/ChangePassword';
 import GroupsPage from './pages/group/GroupsPage';
 import GroupInvite from './pages/group/GroupInvite';
 import Menu from './pages/group/menu';
@@ -39,6 +42,12 @@ const App: React.FC = () => {
         <Route path="/" element={<Navigate to="/auth/signin" replace />} />
         <Route path="/auth/signin" element={<SignIn />} />
         <Route path="/auth/register" element={<Register />} />
+        <Route path="/auth/verify-email" element={<VerifyEmail />} />
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/auth/change-password/:token"
+          element={<ChangePassword />}
+        />
         <Route path="/groups" element={<GroupsPage />} />
         <Route path="/group-invite" element={<GroupInvite />} />
         <Route path="/menu" element={<Menu />} />
