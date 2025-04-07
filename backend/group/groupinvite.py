@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
 from bson import ObjectId
+import uuid
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
-
 
 # Serialize group for output (without notes and creatorId)
 def serialize_group(group):
@@ -13,6 +14,11 @@ def serialize_group(group):
         "members": [str(member_id) for member_id in group["members"]],
     }
 
+# Mock email sending (for now just print)
+def send_invite_email(to_email, token):
+    invite_link = f"http://localhost:3000/accept-invite?token={token}"
+    print(f"[MOCK EMAIL] Invite sent to {to_email}: {invite_link}")
+    # Replace with actual email service (SMTP or SendGrid) for real emails
 
 # Group creation endpoint
 def create_group(db):
@@ -39,7 +45,7 @@ def create_group(db):
         return jsonify({"success": False, "message": "Missing required fields"}), 400
 
     try:
-        # Extract valid member ObjectIds from member dicts (from frontend)
+        # Extract valid member ObjectIds from member dicts
         member_object_ids = [
             ObjectId(member["id"])
             for member in members
@@ -52,17 +58,36 @@ def create_group(db):
         if current_user_id not in member_object_ids:
             member_object_ids.append(current_user_id)
 
-        # Create group object
+        # Create group
         group = {
             "name": group_name,
             "address": address,
             "members": member_object_ids,
         }
 
-        # Insert into DB
         db.groups.insert_one(group)
+        group_id = group["_id"]  # for invites
 
-        # Fetch all groups current user belongs to
+        # Send invites to users (mock)
+        for member in members:
+            member_id_str = member.get("id")
+            member_email = member.get("email")
+
+            if not member_email:
+                continue  # skip if no email provided
+
+            if member_id_str != str(current_user_id):  # skip creator
+                token = str(uuid.uuid4())
+                db.invites.insert_one({
+                    "token": token,
+                    "email": member_email,
+                    "groupId": group_id,
+                    "expiresAt": datetime.utcnow() + timedelta(days=2),
+                    "accepted": False
+                })
+                send_invite_email(member_email, token)
+
+        # Fetch updated groups list for the creator
         groups_cursor = db.groups.find({"members": current_user_id})
         groups = [serialize_group(g) for g in groups_cursor]
 

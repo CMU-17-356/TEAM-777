@@ -9,6 +9,7 @@ from auth.register import handle_register
 from group.search import search_users
 from group.groupinvite import create_group
 from group.groupSearch import groups_by_user, group_by_id, get_users_in_group
+from group.invite import accept_invite  #added this
 from calendars.event import create_event, delete_event, edit_event, get_events
 
 # Load environment variables from .env file (for local testing)
@@ -125,6 +126,12 @@ def handle_delete_event(group_id, event_id):
     if request.method == "OPTIONS":
         return "", 204
     return delete_event(db, group_id, event_id)
+
+
+# added this
+@app.route("/api/accept-invite", methods=["GET"])
+def handle_invite_accept():
+    return accept_invite(db)
 
 
 if __name__ == "__main__":

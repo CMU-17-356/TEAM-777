@@ -29,6 +29,9 @@ const SignIn: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const [message, setMessage] = useState<string>('');     
+  const [isError, setIsError] = useState<boolean>(false); 
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -37,6 +40,7 @@ const SignIn: React.FC = () => {
   const handleSignIn = async () => {
     setIsLoading(true);
     setErrors({ identifier: '', password: '' });
+    setMessage('');
 
     let newErrors: Errors = { identifier: '', password: '' };
 
@@ -63,20 +67,26 @@ const SignIn: React.FC = () => {
       const response = await axios.post(
         `${API_BASE_URL}/auth/login`,
         {
-          // backend route
           identifier: formData.identifier,
           password: formData.password,
         },
         {
           headers: { 'Content-Type': 'application/json' },
-        },
+        }
       );
 
       console.log('Login successful:', response.data);
 
+      setMessage('Login successful!');
+      setIsError(false);
+
       navigate('/groups', { state: { userId: response.data.userId } });
-    } catch (error) {
-      setErrors((prev) => ({ ...prev, password: (error as Error).message }));
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.message || 'Login failed. Please try again.';
+      setMessage(msg);
+      setIsError(true);
+      setErrors((prev) => ({ ...prev, password: msg }));
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +95,24 @@ const SignIn: React.FC = () => {
   return (
     <div className="signin-email-page">
       <div className="signin-form">
+        {/* ✅ Success/Error Message */}
+        {message && (
+          <div
+            style={{
+              backgroundColor: isError ? '#f8d7da' : '#d4edda',
+              color: isError ? '#721c24' : '#155724',
+              border: `1px solid ${isError ? '#f5c6cb' : '#c3e6cb'}`,
+              padding: '10px',
+              marginBottom: '1rem',
+              borderRadius: '4px',
+            }}
+          >
+            {message}
+          </div>
+        )}
+
         <h2>Log in to your Account</h2>
+
         <label className="label">Email</label>
         <div className="signin-group-email">
           <input
@@ -145,3 +172,5 @@ const SignIn: React.FC = () => {
 };
 
 export default SignIn;
+
+

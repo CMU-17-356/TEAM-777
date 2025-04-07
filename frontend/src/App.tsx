@@ -5,25 +5,22 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom';
-//import axios from 'axios';
 import SignIn from './pages/auth/SignIn';
 import Register from './pages/auth/Register';
 import GroupsPage from './pages/group/GroupsPage';
 import GroupInvite from './pages/group/GroupInvite';
 import Menu from './pages/group/menu';
 import Calendar from './pages/calendar/CalendarPage';
+import AcceptInvite from './pages/AcceptInvite'; 
 
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
 
   if (hostname.includes('pr-')) {
-    // PR Preview Environment (Modify the base URL format)
     return `https://${hostname}`;
   } else if (hostname.includes('team-777.onrender.com')) {
-    // Production Environment
     return 'https://team-777.onrender.com';
   } else {
-    // Local Development
     return 'http://127.0.0.1:5001';
   }
 };
@@ -43,9 +40,11 @@ const App: React.FC = () => {
         <Route path="/group-invite" element={<GroupInvite />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/calendar" element={<Calendar />} />
+        <Route path="/accept-invite" element={<AcceptInvite />} /> 
       </Routes>
     </Router>
   );
 };
 
 export default App;
+
