@@ -36,15 +36,16 @@ print("MONGO_URI =", os.getenv("MONGO_URI"))
 
 def get_api_base_url():
     hostname = request.host  # request.host returns the hostname (and port if present)
-    if 'pr-' in hostname:
+    if "pr-" in hostname:
         # PR Preview Environment
         return f"https://{hostname}:3001"
-    elif 'team-777.onrender.com' in hostname:
+    elif "team-777.onrender.com" in hostname:
         # Production Environment
-        return 'https://team-777.onrender.com'
+        return "https://team-777.onrender.com"
     else:
         # Local Development
-        return 'http://127.0.0.1:3001/#'
+        return "http://127.0.0.1:3001/#"
+
 
 # API to insert data into MongoDB
 @app.route("/api/add", methods=["POST"])
@@ -85,17 +86,21 @@ def login():
 def register():
     return handle_register(db, get_api_base_url())
 
+
 @app.route("/auth/verify-email", methods=["POST"])
 def verifyEmail():
     return handle_verify_email(db)
+
 
 @app.route("/auth/reset-password", methods=["POST"])
 def resetPassword():
     return handle_reset_password(db, get_api_base_url())
 
+
 @app.route("/auth/change-password", methods=["POST"])
 def changePassword():
     return handle_change_password(db)
+
 
 @app.route("/api/search-users", methods=["GET"])
 def search():

@@ -28,11 +28,21 @@ type User = {
   email: string;
 };
 
+interface Errors {
+  groupName: string;
+  address: string;
+  addedUsers: string;
+}
+
 const CreateGroupPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { userId } = location.state || {};
-
+  const [errors, setErrors] = useState<Errors>({
+    groupName: '',
+    address: '',
+    addedUsers: '',
+  });
   const [groupName, setGroupName] = useState('');
   const [address, setAddress] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -82,27 +92,23 @@ const CreateGroupPage: React.FC = () => {
   };
 
   const handleCreateGroup = async () => {
+    setErrors({ groupName: '', address: '', addedUsers: '' });
+
+    let newErrors: Errors = { groupName: '', address: '', addedUsers: '' };
     if (!groupName || groupName.trim() === '' || groupName === 'Group Name') {
-      Modal.warning({
-        title: 'Missing Group Name',
-        content: 'Please enter a valid group name.',
-      });
-      return;
+      newErrors.groupName = 'Group Name is required.';
     }
 
     if (!address || address.trim() === '' || address === 'House Address') {
-      Modal.warning({
-        title: 'Missing Address',
-        content: 'Please enter a valid address.',
-      });
-      return;
+      newErrors.address = 'House Address is required.';
     }
 
     if (addedUsers.length === 0) {
-      Modal.warning({
-        title: 'No Members Added',
-        content: 'Please add at least one member to the group.',
-      });
+      newErrors.addedUsers = 'Must add at least one user.';
+    }
+
+    if (newErrors.groupName || newErrors.address || newErrors.addedUsers) {
+      setErrors(newErrors);
       return;
     }
 
@@ -206,6 +212,9 @@ const CreateGroupPage: React.FC = () => {
                 </>
               )}
             </div>
+            {errors.groupName && (
+              <p className="error-text">{errors.groupName}</p>
+            )}
 
             {/* Address (inline editable) */}
             <div
@@ -239,6 +248,7 @@ const CreateGroupPage: React.FC = () => {
                 </>
               )}
             </div>
+            {errors.address && <p className="error-text">{errors.address}</p>}
 
             {/* Search Dropdown */}
             <Dropdown
@@ -266,6 +276,9 @@ const CreateGroupPage: React.FC = () => {
                 }}
               />
             </Dropdown>
+            {errors.addedUsers && (
+              <p className="error-text">{errors.addedUsers}</p>
+            )}
 
             {/* Selected Users */}
             <div

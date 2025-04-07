@@ -57,7 +57,10 @@ const App: React.FC = () => {
         <Route path="/auth/register" element={<Register />} />
         <Route path="/auth/verify-email" element={<VerifyEmail />} />
         <Route path="/auth/reset-password" element={<ResetPassword />} />
-        <Route path="/auth/change-password/:token" element={<ChangePassword />} />
+        <Route
+          path="/auth/change-password/:token"
+          element={<ChangePassword />}
+        />
         <Route path="/groups" element={<GroupsPage />} />
         <Route path="/group-invite" element={<GroupInvite />} />
         <Route path="/menu" element={<Menu />} />

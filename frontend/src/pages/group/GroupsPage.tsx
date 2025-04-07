@@ -26,7 +26,7 @@ const GroupsPage: React.FC = () => {
         );
         setGroups(response.data.groups || []);
       } catch (error) {
-        message.error('Failed to load groups');
+        message.error((error as Error).message);
       } finally {
         setLoading(false);
       }

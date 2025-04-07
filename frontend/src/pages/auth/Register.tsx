@@ -94,13 +94,15 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div style={{
-      background: 'linear-gradient(135deg, #f9f8ff 0%, #ece7fa 100%)',
-      minHeight: '100vh',
-      padding: '40px 0px',
-    }}>
+    <div
+      style={{
+        background: 'linear-gradient(135deg, #f9f8ff 0%, #ece7fa 100%)',
+        minHeight: '100vh',
+        padding: '40px 0px',
+      }}
+    >
       <form className="register-form" onSubmit={handleSubmit}>
-        <h2 style={{fontSize: 28, marginBottom: 30}}>Create an Account</h2>
+        <h2 style={{ fontSize: 28, marginBottom: 30 }}>Create an Account</h2>
         <div>
           <label className="label">Username</label>
           <input
@@ -111,15 +113,19 @@ const Register: React.FC = () => {
             onChange={handleInputChange}
             placeholder="Enter your username"
             className={errors.username ? 'input-error' : ''}
-            style={{marginBottom:10, 
-              marginTop:5,
+            style={{
+              marginBottom: 10,
+              marginTop: 5,
               backgroundColor: 'white',
-              borderColor: '#ddd', 
-              borderRadius: 10, 
-              fontSize: 16, 
-              padding:10}}
+              borderColor: '#ddd',
+              borderRadius: 10,
+              fontSize: 16,
+              padding: 10,
+            }}
           />
-          {errors.username && <span className="error-text">{errors.username}</span>}
+          {errors.username && (
+            <span className="error-text">{errors.username}</span>
+          )}
         </div>
 
         <div>
@@ -132,13 +138,15 @@ const Register: React.FC = () => {
             onChange={handleInputChange}
             placeholder="Enter your email"
             className={errors.email ? 'input-error' : ''}
-            style={{marginBottom:10, 
-              marginTop:5,
+            style={{
+              marginBottom: 10,
+              marginTop: 5,
               backgroundColor: 'white',
-              borderColor: '#ddd', 
-              borderRadius: 10, 
-              fontSize: 16, 
-              padding:10}}
+              borderColor: '#ddd',
+              borderRadius: 10,
+              fontSize: 16,
+              padding: 10,
+            }}
           />
           {errors.email && <span className="error-text">{errors.email}</span>}
         </div>
@@ -153,17 +161,19 @@ const Register: React.FC = () => {
             onChange={handleInputChange}
             placeholder="Enter your password"
             className={errors.password ? 'input-error' : ''}
-            style={{marginBottom:10, 
-              marginTop:5,
+            style={{
+              marginBottom: 10,
+              marginTop: 5,
               backgroundColor: 'white',
-              borderColor: '#ddd', 
-              borderRadius: 10, 
-              fontSize: 16, 
-              padding:10}}
+              borderColor: '#ddd',
+              borderRadius: 10,
+              fontSize: 16,
+              padding: 10,
+            }}
           />
           {errors.password && (
-          <span className="error-text">{errors.password}</span>
-        )}
+            <span className="error-text">{errors.password}</span>
+          )}
         </div>
 
         <button type="submit" className="register-button">

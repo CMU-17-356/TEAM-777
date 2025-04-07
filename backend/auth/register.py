@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 from werkzeug.security import generate_password_hash
 import re
 
+
 def handle_register(db, api):
     data = request.json
     username = data.get("username")
@@ -19,11 +20,24 @@ def handle_register(db, api):
     if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email):
         return jsonify({"success": False, "message": "Invalid email"}), 400
     if not password or len(password) < 8:
-        return jsonify({"success": False, "message": "Password must be at least 8 characters long"}), 400
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": "Password must be at least 8 characters long",
+                }
+            ),
+            400,
+        )
 
     try:
         if db.users.find_one({"email": email}):
-            return jsonify({"success": False, "message": "User with this email already exists"}), 400
+            return (
+                jsonify(
+                    {"success": False, "message": "User with this email already exists"}
+                ),
+                400,
+            )
 
         verify_token = secrets.token_hex(32)
         hashed_password = generate_password_hash(password)
@@ -35,7 +49,7 @@ def handle_register(db, api):
                 "username": username,
                 "password": hashed_password,
                 "verify_token": verify_token,
-                "created_at": current_time
+                "created_at": current_time,
             }
             db.pending_users.update_one({"email": email}, {"$set": update_data})
             print(f"Pending user record updated for email: {email}")
@@ -45,7 +59,7 @@ def handle_register(db, api):
                 "email": email,
                 "password": hashed_password,
                 "verify_token": verify_token,
-                "created_at": current_time
+                "created_at": current_time,
             }
             db.pending_users.insert_one(pending_user)
             print(f"New pending user record inserted for email: {email}")
@@ -74,12 +88,22 @@ def handle_register(db, api):
             print("Verification email sent successfully.")
         except Exception as email_err:
             print("Error sending email:", email_err)
-            return jsonify({"success": False, "message": "Failed to send verification email"}), 500
+            return (
+                jsonify(
+                    {"success": False, "message": "Failed to send verification email"}
+                ),
+                500,
+            )
 
-        return jsonify({
-            "success": True,
-            "message": "Verification email sent. Please check your email to complete registration."
-        }), 200
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "message": "Verification email sent. Please check your email to complete registration.",
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         print("Error:", e)

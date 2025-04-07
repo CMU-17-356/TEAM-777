@@ -5,6 +5,7 @@ import time
 import smtplib
 from email.mime.text import MIMEText
 
+
 def handle_reset_password(db, api):
     data = request.json
     print("Handling reset password request...")
@@ -14,19 +15,21 @@ def handle_reset_password(db, api):
 
     # Validate email format
     if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return jsonify({
-            "success": False,
-            "message": "Invalid email format"
-        }), 400
+        return jsonify({"success": False, "message": "Invalid email format"}), 400
 
     try:
         # Check if a user with this email exists in the database
         user = db.users.find_one({"email": email})
         if not user:
-            return jsonify({
-                "success": False,
-                "message": "No user found with this email address"
-            }), 400
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "No user found with this email address",
+                    }
+                ),
+                400,
+            )
 
         # Generate a password reset token (32-byte hex token)
         reset_token = secrets.token_hex(32)
@@ -35,7 +38,12 @@ def handle_reset_password(db, api):
         # Update the user record with the reset token and expiration time.
         db.users.update_one(
             {"email": email},
-            {"$set": {"reset_token": reset_token, "reset_token_expiration": expiration_time}}
+            {
+                "$set": {
+                    "reset_token": reset_token,
+                    "reset_token_expiration": expiration_time,
+                }
+            },
         )
 
         reset_link = f"{api}/auth/change-password/:{reset_token}"
@@ -63,21 +71,25 @@ def handle_reset_password(db, api):
             server.quit()
 
             print("Password reset email sent successfully.")
-            return jsonify({
-                "success": True,
-                "message": "Password reset email sent successfully"
-            }), 200
+            return (
+                jsonify(
+                    {
+                        "success": True,
+                        "message": "Password reset email sent successfully",
+                    }
+                ),
+                200,
+            )
 
         except Exception as email_err:
             print("Error sending email:", email_err)
-            return jsonify({
-                "success": False,
-                "message": "Failed to send password reset email"
-            }), 500
+            return (
+                jsonify(
+                    {"success": False, "message": "Failed to send password reset email"}
+                ),
+                500,
+            )
 
     except Exception as err:
         print("Server error:", str(err))
-        return jsonify({
-            "success": False,
-            "message": "Server error"
-        }), 500
+        return jsonify({"success": False, "message": "Server error"}), 500

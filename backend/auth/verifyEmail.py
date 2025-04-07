@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 from werkzeug.security import generate_password_hash
 import re
 
+
 def handle_verify_email(db):
     data = request.json
     token = data.get("token")
@@ -17,7 +18,10 @@ def handle_verify_email(db):
         pending_user = db.pending_users.find_one({"verify_token": token})
         if not pending_user:
             print("Pending_user doesn't exist.")
-            return jsonify({"success": False, "message": "Invalid or expired token"}), 400
+            return (
+                jsonify({"success": False, "message": "Invalid or expired token"}),
+                400,
+            )
 
         user = {
             "username": pending_user["username"],
@@ -25,10 +29,15 @@ def handle_verify_email(db):
             "password": pending_user["password"],
         }
         db.users.insert_one(user)
-        print('User inserted successfully')
+        print("User inserted successfully")
         db.pending_users.delete_one({"_id": pending_user["_id"]})
 
-        return jsonify({"success": True, "message": "Email verified. Registration completed."}), 200
+        return (
+            jsonify(
+                {"success": True, "message": "Email verified. Registration completed."}
+            ),
+            200,
+        )
 
     except Exception as e:
         print("Error during email verification:", e)
