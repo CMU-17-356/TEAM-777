@@ -75,7 +75,7 @@ def handle_reset_password(db, api):
                 jsonify(
                     {
                         "success": True,
-                        "message": "Password reset email sent successfully",
+                        "message": "Password reset email sent successfully.",
                     }
                 ),
                 200,
@@ -85,7 +85,10 @@ def handle_reset_password(db, api):
             print("Error sending email:", email_err)
             return (
                 jsonify(
-                    {"success": False, "message": "Failed to send password reset email"}
+                    {
+                        "success": False,
+                        "message": "Failed to send password reset email.",
+                    }
                 ),
                 500,
             )

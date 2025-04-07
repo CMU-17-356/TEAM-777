@@ -33,15 +33,17 @@ db = client["DEV"]  # Change "mydatabase" to your database name
 collection = db["TEST"]  # Change "mycollection" to your collection name
 print("MONGO_URI =", os.getenv("MONGO_URI"))
 
+# db.users.delete_one({"email": "jianingshi1417@gmail.com"})
+
 
 def get_api_base_url():
     hostname = request.host  # request.host returns the hostname (and port if present)
     if "pr-" in hostname:
         # PR Preview Environment
-        return f"https://{hostname}:3001"
+        return f"https://{hostname}/#"
     elif "team-777.onrender.com" in hostname:
         # Production Environment
-        return "https://team-777.onrender.com"
+        return "https://team-777.onrender.com/#"
     else:
         # Local Development
         return "http://127.0.0.1:3001/#"
