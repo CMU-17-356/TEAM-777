@@ -12,7 +12,8 @@ interface Transaction {
   id: string;
   description: string;
   amount: number;
-  paidBy: string;
+  paidBy: string;      // Email of the payer
+  initiatorId: string; // ID of the payer
   date: string;
   splitBetween: string[];
 }
@@ -27,7 +28,6 @@ const BillsPage: React.FC = () => {
   const [form] = Form.useForm();
   const [groupMembers, setGroupMembers] = useState<string[]>([]);
 
-  // Move fetchTransactions outside of useEffect
   const fetchTransactions = async () => {
     try {
       console.log('Fetching transactions for group:', groupId);
@@ -36,24 +36,24 @@ const BillsPage: React.FC = () => {
       
       if (Array.isArray(response.data)) {
         setTransactions(response.data);
+      
         // Calculate balance
-        const userTransactions = response.data.filter((t: Transaction) => 
-          t.paidBy === userId || t.splitBetween.includes(userId)
+        const userTransactions = response.data.filter((t: Transaction) =>
+          t.initiatorId === userId || t.splitBetween.includes(userId)
         );
-        const balance = userTransactions.reduce((acc: number, t: Transaction) => {
-            const isPayer = t.paidBy === userId;
-            const isSplitter = t.splitBetween.includes(userId);
-            const splitAmount = t.amount / t.splitBetween.length;
-          
-            if (isPayer) {
-              acc -= t.amount; // You paid, you’re owed
-            }
-            if (isSplitter) {
-              acc += splitAmount; // You owe your share
-            }
-            return acc;
-          }, 0);
-        setBalance(balance);
+      
+        const calculatedBalance = userTransactions.reduce((acc: number, t: Transaction) => {
+          const isGiver = t.initiatorId === userId;
+          const isReceiver = t.splitBetween.includes(userId);
+          const splitAmount = t.amount / t.splitBetween.length;
+      
+          if (isGiver) acc -= t.amount;
+          if (isReceiver) acc += splitAmount;
+      
+          return acc;
+        }, 0);
+      
+        setBalance(calculatedBalance);
       } else {
         console.error('Invalid transactions data:', response.data);
         message.error('Failed to fetch transactions');
@@ -95,18 +95,13 @@ const BillsPage: React.FC = () => {
     }
   }, [groupId, userId]);
 
-  // Add debug log for groupMembers state changes
-  useEffect(() => {
-    console.log('Group members updated:', groupMembers);
-  }, [groupMembers]);
-
   const handleCreateTransaction = async (values: any) => {
     try {
       console.log('Creating transaction with values:', values);
       const payload = {
         _id: groupId,
         initiator: userId,
-        splitters: [...values.splitBetween, userId], // Include the initiator in the split
+        splitters: [...values.splitBetween], // Include the initiator in the split
         amount: values.amount,
         description: values.description
       };
@@ -119,8 +114,21 @@ const BillsPage: React.FC = () => {
         message.success('Transaction created successfully');
         setIsModalVisible(false);
         form.resetFields();
-        // Refresh transactions
-        await fetchTransactions();
+        
+        // Update transactions if they were returned
+        if (Array.isArray(response.data.transactions)) {
+          console.log('Updating transactions with:', response.data.transactions);
+          setTransactions(response.data.transactions);
+        } else {
+          console.log('No transactions in response, fetching fresh data');
+          await fetchTransactions();
+        }
+        
+        // Update balance if it was returned
+        if (typeof response.data.balance === 'number') {
+          console.log('Updating balance to:', response.data.balance);
+          setBalance(response.data.balance);
+        }
       } else {
         console.error('Failed to create transaction:', response.data.message);
         message.error(response.data.message || 'Failed to create transaction');
@@ -156,7 +164,7 @@ const BillsPage: React.FC = () => {
       >
         <Title level={4} style={{ marginBottom: 8 }}>Your Balance</Title>
         <Text style={{ fontSize: 24, color: balance >= 0 ? '#52c41a' : '#f5222d' }}>
-          ${Math.abs(balance).toFixed(2)}
+          ${balance.toFixed(2)}
         </Text>
       </Card>
 
@@ -177,7 +185,7 @@ const BillsPage: React.FC = () => {
               <div style={{ width: '100%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <Text strong>{transaction.description}</Text>
-                  <Text style={{ color: transaction.paidBy === userId ? '#52c41a' : '#f5222d' }}>
+                  <Text style={{ color: transaction.initiatorId === userId ? '#52c41a' : '#f5222d' }}>
                     ${transaction.amount.toFixed(2)}
                   </Text>
                 </div>
@@ -235,7 +243,6 @@ const BillsPage: React.FC = () => {
           >
             <InputNumber<number>
               style={{ width: '100%' }}
-              min={0}
               step={0.01}
               formatter={(value: number | undefined) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
               parser={(value: string | undefined) => value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0}
