@@ -7,7 +7,7 @@ import {
   Dropdown,
   Avatar,
   Tag,
-  Modal,
+  
   Card,
   message,
 } from 'antd';
