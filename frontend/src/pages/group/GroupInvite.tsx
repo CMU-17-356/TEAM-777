@@ -75,7 +75,7 @@ const CreateGroupPage: React.FC = () => {
   // Wrap with debounce only once using useMemo
   const debouncedSearch = useMemo(
     () => debounce(handleSearchRaw, 400),
-    [] // empty dependency array so it's stable
+    [], // empty dependency array so it's stable
   );
 
   // Run the effect when searchInput changes
@@ -118,7 +118,9 @@ const CreateGroupPage: React.FC = () => {
     }
 
     if (!userId) {
-      messageApi.error('Could not find current user info. Please log in again.');
+      messageApi.error(
+        'Could not find current user info. Please log in again.',
+      );
       return;
     }
 
@@ -133,21 +135,23 @@ const CreateGroupPage: React.FC = () => {
     try {
       const response = await axios.post(
         `${API_BASE_URL}/api/group-create`,
-        groupData
+        groupData,
       );
       console.log('Group created successfully:', response.data);
-      
+
       // Show success popup
       messageApi.success('Group created successfully! Redirecting...');
-      
+
       // Optionally delay navigation so the user can see the message
       setTimeout(() => {
         navigate('/groups', { state: { userId } });
       }, 2000);
     } catch (error: any) {
       console.error('Group creation failed:', error);
-      const errMsg = error?.response?.data?.message || 'Group creation failed! Please try again later.';
-      
+      const errMsg =
+        error?.response?.data?.message ||
+        'Group creation failed! Please try again later.';
+
       // Show error popup
       messageApi.error(errMsg);
     }

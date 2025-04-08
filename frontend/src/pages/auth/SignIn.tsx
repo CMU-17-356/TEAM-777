@@ -81,15 +81,15 @@ const SignIn: React.FC = () => {
 
       // 3) Show success message
       messageApi.success('Login successful! Redirecting to your groups...');
-      
+
       // Optionally navigate after a short delay so the user sees the message
       setTimeout(() => {
         navigate('/groups', { state: { userId: response.data.userId } });
       }, 2000);
-
     } catch (error: any) {
       // 4) Show error message
-      const errMsg = error?.response?.data?.message || 'Login failed. Please try again.';
+      const errMsg =
+        error?.response?.data?.message || 'Login failed. Please try again.';
       messageApi.error(errMsg);
 
       setErrors((prev) => ({ ...prev, password: errMsg }));
@@ -135,7 +135,9 @@ const SignIn: React.FC = () => {
               }}
             />
           </div>
-          {errors.identifier && <p className="error-text">{errors.identifier}</p>}
+          {errors.identifier && (
+            <p className="error-text">{errors.identifier}</p>
+          )}
 
           <div>
             <label className="label">Password</label>

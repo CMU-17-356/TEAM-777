@@ -2,13 +2,7 @@ import React, { useEffect, useState } from 'react';
 import GroupCard from '../../components/GroupCard';
 import { Group } from '../../types';
 import { PlusOutlined } from '@ant-design/icons';
-import { 
-  Button, 
-  Typography, 
-  Spin, 
-  message, 
-  Card 
-} from 'antd';
+import { Button, Typography, Spin, message, Card } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../../App';
