@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Typography, Button, List, Modal, Form, Input, InputNumber, Select, message } from 'antd';
+import {
+  Card,
+  Typography,
+  Button,
+  List,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  message,
+} from 'antd';
 import { ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -12,7 +23,7 @@ interface Transaction {
   id: string;
   description: string;
   amount: number;
-  paidBy: string;      // Email of the payer
+  paidBy: string; // Email of the payer
   initiatorId: string; // ID of the payer
   date: string;
   splitBetween: string[];
@@ -31,28 +42,34 @@ const BillsPage: React.FC = () => {
   const fetchTransactions = async () => {
     try {
       console.log('Fetching transactions for group:', groupId);
-      const response = await axios.get(`${API_BASE_URL}/api/transactions/${groupId}`);
+      const response = await axios.get(
+        `${API_BASE_URL}/api/transactions/${groupId}`,
+      );
       console.log('Transactions response:', response.data);
-      
+
       if (Array.isArray(response.data)) {
         setTransactions(response.data);
-      
+
         // Calculate balance
-        const userTransactions = response.data.filter((t: Transaction) =>
-          t.initiatorId === userId || t.splitBetween.includes(userId)
+        const userTransactions = response.data.filter(
+          (t: Transaction) =>
+            t.initiatorId === userId || t.splitBetween.includes(userId),
         );
-      
-        const calculatedBalance = userTransactions.reduce((acc: number, t: Transaction) => {
-          const isGiver = t.initiatorId === userId;
-          const isReceiver = t.splitBetween.includes(userId);
-          const splitAmount = t.amount / t.splitBetween.length;
-      
-          if (isGiver) acc -= t.amount;
-          if (isReceiver) acc += splitAmount;
-      
-          return acc;
-        }, 0);
-      
+
+        const calculatedBalance = userTransactions.reduce(
+          (acc: number, t: Transaction) => {
+            const isGiver = t.initiatorId === userId;
+            const isReceiver = t.splitBetween.includes(userId);
+            const splitAmount = t.amount / t.splitBetween.length;
+
+            if (isGiver) acc -= t.amount;
+            if (isReceiver) acc += splitAmount;
+
+            return acc;
+          },
+          0,
+        );
+
         setBalance(calculatedBalance);
       } else {
         console.error('Invalid transactions data:', response.data);
@@ -69,9 +86,11 @@ const BillsPage: React.FC = () => {
     const fetchGroupMembers = async () => {
       try {
         console.log('Fetching group members for group:', groupId);
-        const response = await axios.get(`${API_BASE_URL}/api/users/${groupId}`);
+        const response = await axios.get(
+          `${API_BASE_URL}/api/users/${groupId}`,
+        );
         console.log('Group members response:', response.data);
-        
+
         if (response.data.success && response.data.users) {
           const members = response.data.users.map((user: any) => user.email);
           console.log('Setting group members:', members);
@@ -83,6 +102,46 @@ const BillsPage: React.FC = () => {
       } catch (error) {
         console.error('Error fetching group members:', error);
         message.error('Failed to fetch group members');
+      }
+    };
+
+    const fetchTransactions = async () => {
+      try {
+        console.log('Fetching transactions for group:', groupId);
+        const response = await axios.get(
+          `${API_BASE_URL}/api/transactions/${groupId}`,
+        );
+        console.log('Transactions response:', response.data);
+
+        if (Array.isArray(response.data)) {
+          setTransactions(response.data);
+          const userTransactions = response.data.filter(
+            (t: Transaction) =>
+              t.initiatorId === userId || t.splitBetween.includes(userId),
+          );
+
+          const calculatedBalance = userTransactions.reduce(
+            (acc: number, t: Transaction) => {
+              const isGiver = t.initiatorId === userId;
+              const isReceiver = t.splitBetween.includes(userId);
+              const splitAmount = t.amount / t.splitBetween.length;
+
+              if (isGiver) acc -= t.amount;
+              if (isReceiver) acc += splitAmount;
+
+              return acc;
+            },
+            0,
+          );
+
+          setBalance(calculatedBalance);
+        } else {
+          console.error('Invalid transactions data:', response.data);
+          message.error('Failed to fetch transactions');
+        }
+      } catch (error) {
+        console.error('Error fetching transactions:', error);
+        message.error('Failed to fetch transactions');
       }
     };
 
@@ -103,27 +162,33 @@ const BillsPage: React.FC = () => {
         initiator: userId,
         splitters: [...values.splitBetween], // Include the initiator in the split
         amount: values.amount,
-        description: values.description
+        description: values.description,
       };
       console.log('Sending payload:', payload);
-      
-      const response = await axios.post(`${API_BASE_URL}/auth/billSplit`, payload);
+
+      const response = await axios.post(
+        `${API_BASE_URL}/auth/billSplit`,
+        payload,
+      );
       console.log('Transaction response:', response.data);
-      
+
       if (response.data.success) {
         message.success('Transaction created successfully');
         setIsModalVisible(false);
         form.resetFields();
-        
+
         // Update transactions if they were returned
         if (Array.isArray(response.data.transactions)) {
-          console.log('Updating transactions with:', response.data.transactions);
+          console.log(
+            'Updating transactions with:',
+            response.data.transactions,
+          );
           setTransactions(response.data.transactions);
         } else {
           console.log('No transactions in response, fetching fresh data');
           await fetchTransactions();
         }
-        
+
         // Update balance if it was returned
         if (typeof response.data.balance === 'number') {
           console.log('Updating balance to:', response.data.balance);
@@ -134,13 +199,24 @@ const BillsPage: React.FC = () => {
         message.error(response.data.message || 'Failed to create transaction');
       }
     } catch (error: any) {
-      console.error('Error creating transaction:', error.response?.data || error);
-      message.error(error.response?.data?.message || 'Failed to create transaction');
+      console.error(
+        'Error creating transaction:',
+        error.response?.data || error,
+      );
+      message.error(
+        error.response?.data?.message || 'Failed to create transaction',
+      );
     }
   };
 
   return (
-    <div style={{ backgroundColor: '#f9f8ff', minHeight: '100vh', padding: '24px 16px' }}>
+    <div
+      style={{
+        backgroundColor: '#f9f8ff',
+        minHeight: '100vh',
+        padding: '24px 16px',
+      }}
+    >
       {/* Header with back button */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
         <Button
@@ -150,7 +226,9 @@ const BillsPage: React.FC = () => {
         >
           Back
         </Button>
-        <Title level={2} style={{ margin: 0 }}>Bills</Title>
+        <Title level={2} style={{ margin: 0 }}>
+          Bills
+        </Title>
       </div>
 
       {/* Balance Card */}
@@ -162,8 +240,12 @@ const BillsPage: React.FC = () => {
           border: '1px solid #e5dcff',
         }}
       >
-        <Title level={4} style={{ marginBottom: 8 }}>Your Balance</Title>
-        <Text style={{ fontSize: 24, color: balance >= 0 ? '#52c41a' : '#f5222d' }}>
+        <Title level={4} style={{ marginBottom: 8 }}>
+          Your Balance
+        </Title>
+        <Text
+          style={{ fontSize: 24, color: balance >= 0 ? '#52c41a' : '#f5222d' }}
+        >
           ${balance.toFixed(2)}
         </Text>
       </Card>
@@ -183,13 +265,32 @@ const BillsPage: React.FC = () => {
           renderItem={(transaction) => (
             <List.Item>
               <div style={{ width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: 4,
+                  }}
+                >
                   <Text strong>{transaction.description}</Text>
-                  <Text style={{ color: transaction.initiatorId === userId ? '#52c41a' : '#f5222d' }}>
+                  <Text
+                    style={{
+                      color:
+                        transaction.initiatorId === userId
+                          ? '#52c41a'
+                          : '#f5222d',
+                    }}
+                  >
                     ${transaction.amount.toFixed(2)}
                   </Text>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    color: '#666',
+                  }}
+                >
                   <Text>Paid by: {transaction.paidBy}</Text>
                   <Text>{new Date(transaction.date).toLocaleDateString()}</Text>
                 </div>
@@ -223,11 +324,7 @@ const BillsPage: React.FC = () => {
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
-        <Form
-          form={form}
-          onFinish={handleCreateTransaction}
-          layout="vertical"
-        >
+        <Form form={form} onFinish={handleCreateTransaction} layout="vertical">
           <Form.Item
             name="description"
             label="Description"
@@ -244,19 +341,27 @@ const BillsPage: React.FC = () => {
             <InputNumber<number>
               style={{ width: '100%' }}
               step={0.01}
-              formatter={(value: number | undefined) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value: string | undefined) => value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0}
+              formatter={(value: number | undefined) =>
+                `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+              }
+              parser={(value: string | undefined) =>
+                value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0
+              }
             />
           </Form.Item>
 
           <Form.Item
             name="splitBetween"
             label="Split Between"
-            rules={[{ required: true, message: 'Please select who to split with' }]}
+            rules={[
+              { required: true, message: 'Please select who to split with' },
+            ]}
           >
             <Select mode="multiple" placeholder="Select members">
-              {groupMembers.map(member => (
-                <Option key={member} value={member}>{member}</Option>
+              {groupMembers.map((member) => (
+                <Option key={member} value={member}>
+                  {member}
+                </Option>
               ))}
             </Select>
           </Form.Item>
@@ -272,4 +377,4 @@ const BillsPage: React.FC = () => {
   );
 };
 
-export default BillsPage; 
+export default BillsPage;

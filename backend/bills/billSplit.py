@@ -16,7 +16,7 @@ def calculate_user_balance(db, group_id, user_id):
             amount = float(content["amount"])
             splitters = content["splitters"]
             initiator = content["initiator"]
-            
+
             if initiator == user_id:
                 balance -= amount
             elif user_id in splitters:
@@ -38,7 +38,7 @@ def get_formatted_transactions(db, group_id):
         transactions = []
         for transaction_id, transaction_data in record["history"].items():
             content = transaction_data["content"]
-            
+
             # Get initiator's email and ID
             initiator_id = content["initiator"]
             initiator = db.users.find_one({"_id": ObjectId(initiator_id)})
@@ -54,7 +54,9 @@ def get_formatted_transactions(db, group_id):
                         splitter_emails.append(splitter["email"])
                 else:
                     # Handle cases where an invalid ID might be stored (optional)
-                    print(f"Warning: Invalid splitter ID found in transaction {transaction_id}: {splitter_id}")
+                    print(
+                        f"Warning: Invalid splitter ID found in transaction {transaction_id}: {splitter_id}"
+                    )
                     splitter_emails.append("Invalid User ID")
 
             formatted_transaction = {
@@ -64,7 +66,7 @@ def get_formatted_transactions(db, group_id):
                 "paidBy": initiator_email,
                 "initiatorId": initiator_id,  # Add initiator ID here
                 "date": content["timestamp"],
-                "splitBetween": splitter_emails
+                "splitBetween": splitter_emails,
             }
             transactions.append(formatted_transaction)
 
@@ -81,41 +83,29 @@ def handle_add_expense(db):
     try:
         data = request.json
         if not data:
-            return jsonify({
-                "success": False,
-                "message": "No data provided"
-            }), 400
+            return jsonify({"success": False, "message": "No data provided"}), 400
 
-        required_fields = [
-            "_id",
-            "initiator",
-            "splitters",
-            "amount",
-            "description"
-        ]
+        required_fields = ["_id", "initiator", "splitters", "amount", "description"]
         if not all(field in data for field in required_fields):
-            return jsonify({
-                "success": False,
-                "message": "Missing required fields"
-            }), 400
+            return (
+                jsonify({"success": False, "message": "Missing required fields"}),
+                400,
+            )
 
         if not isinstance(data["amount"], (int, float)):
-            return jsonify({
-                "success": False,
-                "message": "Amount must be positive"
-            }), 400
+            return (
+                jsonify({"success": False, "message": "Amount must be positive"}),
+                400,
+            )
 
         if not isinstance(data["splitters"], list) or not data["splitters"]:
-            return jsonify({
-                "success": False,
-                "message": "Splitters must be a list"
-            }), 400
+            return (
+                jsonify({"success": False, "message": "Splitters must be a list"}),
+                400,
+            )
 
         if not isinstance(data["initiator"], str) or not data["initiator"]:
-            return jsonify({
-                "success": False,
-                "message": "Invalid initiator"
-            }), 400
+            return jsonify({"success": False, "message": "Invalid initiator"}), 400
 
         group_id = data["_id"]
         timestamp = datetime.datetime.utcnow().isoformat()
@@ -131,34 +121,35 @@ def handle_add_expense(db):
         collection = db.transactions
         record = collection.find_one({"_id": group_id}) or {
             "_id": group_id,
-            "history": {}
+            "history": {},
         }
         transaction_id = str(len(record["history"]) + 1)
         record["history"][transaction_id] = {"content": new_transaction}
 
         # Save the new transaction
-        collection.update_one(
-            {"_id": group_id},
-            {"$set": record},
-            upsert=True
-        )
+        collection.update_one({"_id": group_id}, {"$set": record}, upsert=True)
 
         # Get updated transactions
         transactions = get_formatted_transactions(db, group_id)
-        
+
         # Calculate balance for the initiator
         balance = calculate_user_balance(db, group_id, data["initiator"])
 
-        return jsonify({
-            "success": True,
-            "message": "Expense added successfully",
-            "transactions": transactions,  # This will now be the full list of transactions
-            "balance": balance
-        }), 200
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "message": "Expense added successfully",
+                    "transactions": transactions,  # This will now be the full list of transactions
+                    "balance": balance,
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         print(f"Error in handle_add_expense: {str(e)}")  # Add debug logging
-        return jsonify({
-            "success": False,
-            "message": f"An error occurred: {str(e)}"
-        }), 500
+        return (
+            jsonify({"success": False, "message": f"An error occurred: {str(e)}"}),
+            500,
+        )

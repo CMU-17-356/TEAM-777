@@ -2,6 +2,7 @@ from flask import jsonify
 from bson import ObjectId
 from datetime import datetime
 
+
 def get_transactions(db, group_id):
     if not group_id or not ObjectId.is_valid(group_id):
         return jsonify({"success": False, "message": "Invalid group ID"}), 400
@@ -16,7 +17,7 @@ def get_transactions(db, group_id):
         transactions = []
         for transaction_id, transaction_data in record["history"].items():
             content = transaction_data["content"]
-            
+
             # Get initiator's email
             initiator = db.users.find_one({"_id": ObjectId(content["initiator"])})
             initiator_email = initiator["email"] if initiator else "Unknown"
@@ -28,7 +29,7 @@ def get_transactions(db, group_id):
                 "amount": float(content["amount"]),
                 "paidBy": initiator_email,
                 "date": content["timestamp"],
-                "splitBetween": content["splitters"]
+                "splitBetween": content["splitters"],
             }
             transactions.append(formatted_transaction)
 
@@ -38,4 +39,4 @@ def get_transactions(db, group_id):
 
     except Exception as e:
         print("Error fetching transactions:", str(e))
-        return jsonify({"success": False, "message": "Server error"}), 500 
+        return jsonify({"success": False, "message": "Server error"}), 500
