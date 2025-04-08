@@ -7,13 +7,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../../App';
 
-// Import icons
-import {
-  CalendarOutlined,
-  DollarOutlined,
-  ShoppingCartOutlined,
-} from '@ant-design/icons';
-
 const { Title } = Typography;
 
 const GroupsPage: React.FC = () => {
@@ -23,13 +16,6 @@ const GroupsPage: React.FC = () => {
 
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Only include the 3 tabs shown in your MenuPage
-  const bottomTabs = [
-    { label: 'Bill Management', icon: <DollarOutlined />, path: '/bills' },
-    { label: 'Calendar', icon: <CalendarOutlined />, path: '/calendar' },
-    { label: 'Grocery', icon: <ShoppingCartOutlined />, path: '/grocery' },
-  ];
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -64,7 +50,7 @@ const GroupsPage: React.FC = () => {
       style={{
         background: 'linear-gradient(135deg, #f9f8ff 0%, #ece7fa 100%)',
         minHeight: '100vh',
-        padding: '40px 20px 80px', // bottom padding for tab bar
+        padding: '40px 20px',
       }}
     >
       <div
@@ -123,41 +109,6 @@ const GroupsPage: React.FC = () => {
             <strong style={{ color: '#7D6DC2' }}>+</strong> to create one.
           </p>
         )}
-      </div>
-
-      {/* Bottom Navigation Tabs */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          width: '100%',
-          height: 60,
-          backgroundColor: '#fff',
-          borderTop: '1px solid #ddd',
-          display: 'flex',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          zIndex: 1000,
-        }}
-      >
-        {bottomTabs.map((tab) => (
-          <Button
-            key={tab.label}
-            type="text"
-            icon={tab.icon}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              color: '#7D6DC2',
-              fontSize: 12,
-            }}
-            onClick={() => navigate(tab.path, { state: { userId } })}
-          >
-            {tab.label}
-          </Button>
-        ))}
       </div>
     </div>
   );
