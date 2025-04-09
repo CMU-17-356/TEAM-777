@@ -12,12 +12,14 @@ import {
   message,
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { useLocation, useNavigate } from 'react-router-dom';
+// import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation} from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../../App';
 import GroupHeadBar from '../../components/GroupHeadBar';
 
-const { Title, Text } = Typography;
+// const { Title, Text } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
 
 interface Transaction {
@@ -31,10 +33,11 @@ interface Transaction {
 }
 
 const BillsPage: React.FC = () => {
-  const navigate = useNavigate();
+  /* const navigate = useNavigate(); */
   const location = useLocation();
   const { userId, groupId } = location.state || {};
-  const [balance, setBalance] = useState<number>(0);
+  // const [balance, setBalance] = useState<number>(0);
+  // const [_, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -52,12 +55,12 @@ const BillsPage: React.FC = () => {
         setTransactions(response.data);
 
         // Calculate balance
-        const userTransactions = response.data.filter(
+        /* const userTransactions = response.data.filter(
           (t: Transaction) =>
             t.initiatorId === userId || t.splitBetween.includes(userId),
-        );
+        ); */
 
-        const calculatedBalance = userTransactions.reduce(
+        /* const calculatedBalance = userTransactions.reduce(
           (acc: number, t: Transaction) => {
             const isGiver = t.initiatorId === userId;
             const isReceiver = t.splitBetween.includes(userId);
@@ -69,9 +72,9 @@ const BillsPage: React.FC = () => {
             return acc;
           },
           0,
-        );
+        ); */
 
-        setBalance(calculatedBalance);
+        // setBalance(calculatedBalance);
       } else {
         console.error('Invalid transactions data:', response.data);
         message.error('Failed to fetch transactions');
@@ -116,12 +119,12 @@ const BillsPage: React.FC = () => {
 
         if (Array.isArray(response.data)) {
           setTransactions(response.data);
-          const userTransactions = response.data.filter(
+          /* const userTransactions = response.data.filter(
             (t: Transaction) =>
               t.initiatorId === userId || t.splitBetween.includes(userId),
-          );
+          ); */
 
-          const calculatedBalance = userTransactions.reduce(
+          /* const calculatedBalance = userTransactions.reduce(
             (acc: number, t: Transaction) => {
               const isGiver = t.initiatorId === userId;
               const isReceiver = t.splitBetween.includes(userId);
@@ -133,9 +136,9 @@ const BillsPage: React.FC = () => {
               return acc;
             },
             0,
-          );
+          ); */
 
-          setBalance(calculatedBalance);
+          // setBalance(calculatedBalance);
         } else {
           console.error('Invalid transactions data:', response.data);
           message.error('Failed to fetch transactions');
@@ -193,7 +196,7 @@ const BillsPage: React.FC = () => {
         // Update balance if it was returned
         if (typeof response.data.balance === 'number') {
           console.log('Updating balance to:', response.data.balance);
-          setBalance(response.data.balance);
+          // setBalance(response.data.balance);
         }
       } else {
         console.error('Failed to create transaction:', response.data.message);
