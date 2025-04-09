@@ -15,6 +15,7 @@ import GroupsPage from './pages/group/GroupsPage';
 import GroupInvite from './pages/group/GroupInvite';
 import Menu from './pages/group/menu';
 import Calendar from './pages/calendar/CalendarPage';
+import BillsPage from './pages/bills/Bills';
 
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
@@ -52,6 +53,7 @@ const App: React.FC = () => {
         <Route path="/group-invite" element={<GroupInvite />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/calendar" element={<Calendar />} />
+        <Route path="/bills" element={<BillsPage />} />
       </Routes>
     </Router>
   );

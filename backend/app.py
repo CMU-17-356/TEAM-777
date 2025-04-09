@@ -13,6 +13,8 @@ from group.search import search_users
 from group.groupinvite import create_group
 from group.groupSearch import groups_by_user, group_by_id, get_users_in_group
 from calendars.event import create_event, delete_event, edit_event, get_events
+from bills.billSplit import handle_add_expense
+from bills.transactions import get_transactions
 
 # Load environment variables from .env file (for local testing)
 load_dotenv()
@@ -158,6 +160,16 @@ def handle_delete_event(group_id, event_id):
     if request.method == "OPTIONS":
         return "", 204
     return delete_event(db, group_id, event_id)
+
+
+@app.route("/auth/billSplit", methods=["POST"])
+def add_expense():
+    return handle_add_expense(db)
+
+
+@app.route("/api/transactions/<string:group_id>", methods=["GET"])
+def handle_get_transactions(group_id):
+    return get_transactions(db, group_id)
 
 
 if __name__ == "__main__":
