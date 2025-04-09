@@ -11,10 +11,11 @@ import {
   Select,
   message,
 } from 'antd';
-import { ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../../App';
+import GroupHeadBar from '../../components/GroupHeadBar';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -217,21 +218,12 @@ const BillsPage: React.FC = () => {
         padding: '24px 16px',
       }}
     >
-      {/* Header with back button */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
-        <Button
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/menu', { state: { userId, groupId } })}
-          style={{ marginRight: 16 }}
-        >
-          Back
-        </Button>
-        <Title level={2} style={{ margin: 0 }}>
-          Bills
-        </Title>
+      <div style={{ marginBottom: 24 }}>
+        <GroupHeadBar />
       </div>
 
-      {/* Balance Card */}
+      {/* Balance Card - Commented out */}
+      {/*
       <Card
         style={{
           marginBottom: 24,
@@ -249,6 +241,7 @@ const BillsPage: React.FC = () => {
           ${balance.toFixed(2)}
         </Text>
       </Card>
+      */}
 
       {/* Transaction History */}
       <Card
