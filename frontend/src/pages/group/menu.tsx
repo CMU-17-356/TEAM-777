@@ -1,3 +1,4 @@
+// MenuPage.tsx
 import React from 'react';
 import { Card, Typography, Button } from 'antd';
 import {
@@ -8,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import GroupHeaderBar from './../../components/GroupHeadBar';
+import BottomTabBar from './../../components/BottomTabBar'; // Import the BottomTabBar
 
 const featureItems = [
   {
@@ -32,11 +34,9 @@ const MenuPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { userId, groupId } = location.state || {};
-  //const location = useLocation();
-  //const { userId, groupId } = (location.state as { userId: string; groupId: string });
 
   return (
-    <div style={{ backgroundColor: '#f9f8ff', minHeight: '100vh' }}>
+    <div style={{ backgroundColor: '#f9f8ff', minHeight: '100vh', paddingBottom: '80px' }}>
       {/* Full-width GroupHeaderBar */}
       <div style={{ padding: 0 }}>
         <GroupHeaderBar />
@@ -64,7 +64,7 @@ const MenuPage: React.FC = () => {
               backgroundColor: '#faf6ff',
               border: '1px solid #e5dcff',
               boxShadow: '0 2px 4px rgba(0, 0, 0, 0.06)',
-              height: 72, // 💡 Thicker height (1.5x)
+              height: 72, // Thicker height
             }}
             bodyStyle={{
               display: 'flex',
@@ -101,7 +101,7 @@ const MenuPage: React.FC = () => {
             icon={<PlusOutlined style={{ fontSize: 32 }} />}
             style={{
               width: '100%',
-              height: 72, // 💡 Thicker Add card too
+              height: 72,
               fontSize: 24,
               color: '#aaa',
               backgroundColor: '#f5f5f5',
@@ -111,6 +111,9 @@ const MenuPage: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* Add BottomTabBar (fixed at bottom) */}
+      <BottomTabBar />
     </div>
   );
 };
