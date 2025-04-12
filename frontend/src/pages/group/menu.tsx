@@ -36,7 +36,13 @@ const MenuPage: React.FC = () => {
   const { userId, groupId } = location.state || {};
 
   return (
-    <div style={{ backgroundColor: '#f9f8ff', minHeight: '100vh', paddingBottom: '80px' }}>
+    <div
+      style={{
+        backgroundColor: '#f9f8ff',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+      }}
+    >
       {/* Full-width GroupHeaderBar */}
       <div style={{ padding: 0 }}>
         <GroupHeaderBar />

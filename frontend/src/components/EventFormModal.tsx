@@ -67,8 +67,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
           messageApi.error(json.message || 'Failed to load users');
         }
       } catch (error: any) {
-        const errMsg =
-          error?.response?.data?.message || 'Error fetching users';
+        const errMsg = error?.response?.data?.message || 'Error fetching users';
         messageApi.error(errMsg);
         console.error('Error fetching users:', error);
       }
