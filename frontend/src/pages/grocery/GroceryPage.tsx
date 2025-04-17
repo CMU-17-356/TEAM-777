@@ -1,6 +1,4 @@
-// GroceryPage.tsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Typography,
@@ -12,28 +10,72 @@ import {
   message,
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import { useLocation } from 'react-router-dom';
+import axios from 'axios';
+import { API_BASE_URL } from '../../App';
 import GroupHeadBar from '../../components/GroupHeadBar';
 import BottomTabBar from '../../components/BottomTabBar';
 
 const { Text } = Typography;
 
 interface GroceryItem {
-  name: string;
+  item: string;
   quantity: string;
   place: string;
   requester: string;
 }
 
 const GroceryPage: React.FC = () => {
+  const location = useLocation();
+  const { groupId, userId } = location.state || {};
   const [groceryList, setGroceryList] = useState<GroceryItem[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
-  const handleAddGroceryItem = (values: GroceryItem) => {
-    setGroceryList([...groceryList, values]);
-    setIsModalVisible(false);
-    form.resetFields();
-    message.success('Grocery item added');
+  // Fetch grocery items from backend
+  const fetchGroceryItems = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/groceries/${groupId}`);
+      if (Array.isArray(response.data)) {
+        setGroceryList(response.data);
+      } else {
+        message.error('Unexpected data format when fetching groceries');
+      }
+    } catch (error) {
+      console.error('Error fetching groceries:', error);
+      message.error('Failed to fetch grocery items');
+    }
+  }, [groupId]);
+
+  useEffect(() => {
+    if (groupId) {
+      fetchGroceryItems();
+    }
+  }, [groupId, fetchGroceryItems]);
+
+  // Submit handler
+  const handleAddGroceryItem = async (values: GroceryItem) => {
+    try {
+      const payload = {
+        _id: groupId,
+        requester: userId || values.requester,
+        item: values.item,
+        place: values.place,
+        quantity: values.quantity,
+      };
+      const response = await axios.post(`${API_BASE_URL}/auth/groceryAdd`, payload);
+      if (response.data.success) {
+        message.success('Grocery item added');
+        setIsModalVisible(false);
+        form.resetFields();
+        fetchGroceryItems(); // refresh
+      } else {
+        message.error(response.data.message || 'Failed to add item');
+      }
+    } catch (error) {
+      console.error('Error adding grocery item:', error);
+      message.error('Server error when adding item');
+    }
   };
 
   return (
@@ -58,13 +100,13 @@ const GroceryPage: React.FC = () => {
           backgroundColor: '#faf6ff',
           border: '1px solid #e5dcff',
         }}
-      >
+      >        
         <List
           dataSource={groceryList}
           renderItem={(item) => (
             <List.Item>
               <div>
-                <Text strong>{item.quantity} {item.name}</Text>
+                <Text strong>{item.quantity} {item.item}</Text>
                 <div style={{ color: '#888' }}>Place: {item.place}</div>
                 <div style={{ color: '#888' }}>Requested by: {item.requester}</div>
               </div>
@@ -72,6 +114,7 @@ const GroceryPage: React.FC = () => {
           )}
           locale={{ emptyText: 'No grocery items yet' }}
         />
+
       </Card>
 
       <Button
@@ -97,7 +140,7 @@ const GroceryPage: React.FC = () => {
       >
         <Form form={form} onFinish={handleAddGroceryItem} layout="vertical">
           <Form.Item
-            name="name"
+            name="item"
             label="Item Name"
             rules={[{ required: true, message: 'Please enter item name' }]}
           >
@@ -117,13 +160,15 @@ const GroceryPage: React.FC = () => {
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            name="requester"
-            label="Requester"
-            rules={[{ required: true, message: 'Please enter requester name' }]}
-          >
-            <Input />
-          </Form.Item>
+          {!userId && (
+            <Form.Item
+              name="requester"
+              label="Requester"
+              rules={[{ required: true, message: 'Please enter requester name' }]}
+            >
+              <Input />
+            </Form.Item>
+          )}
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
               Add Item
