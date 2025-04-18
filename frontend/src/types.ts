@@ -1,11 +1,22 @@
+
 export type User = {
   id: string;
   name: string;
 };
 
-export type Group = {
+
+export interface Group {
   id: string;
   name: string;
   address?: string;
-  members: User[];
-};
+  members: User[];           
+}
+
+
+export interface NotificationInvite {
+  id: string;              
+  groupId: string;          
+  senderId: string;        
+  status: 'pending' | 'accepted' | 'declined';
+  createdAt: string;       
+}

@@ -1,73 +1,72 @@
-from flask import Flask, request, jsonify
+
+# backend/groupinvite.py
+from datetime import datetime
 from bson import ObjectId
+from flask import request, jsonify
 
-app = Flask(__name__)
-
-
-# Serialize group for output (without notes and creatorId)
-def serialize_group(group):
+# ------------------------ helpers ------------------------ #
+def _serialize_group(group):
+    """Return a lightweight group object for the front‑end."""
     return {
         "id": str(group["_id"]),
         "name": group["name"],
         "address": group["address"],
-        "members": [str(member_id) for member_id in group["members"]],
+        "members": [str(mid) for mid in group["members"]],
     }
 
 
-# Group creation endpoint
+# ---------------------- main handler --------------------- #
 def create_group(db):
-    data = request.get_json()
+    """
+    POST /api/group-create
+    Body: {
+        "creatorId": "...",
+        "groupName": "...",
+        "address": "...",
+        "members": [ { "id": "..." }, ... ]   # people you want to invite
+    }
+    """
+    data = request.get_json(force=True)
 
-    # Extract creator ID
-    current_user_id_str = data.get("creatorId")
-    if not current_user_id_str or not ObjectId.is_valid(current_user_id_str):
+    creator_id_str = data.get("creatorId", "")
+    if not ObjectId.is_valid(creator_id_str):
         return jsonify({"success": False, "message": "Invalid creatorId"}), 400
+    creator_id = ObjectId(creator_id_str)
 
-    current_user_id = ObjectId(current_user_id_str)
+    name    = data.get("groupName", "").strip()
+    address = data.get("address",    "").strip()
+    invitee_dicts = data.get("members", [])  # list of dicts
 
-    # Extract and validate form fields
-    group_name = data.get("groupName", "").strip()
-    address = data.get("address", "").strip()
-    members = data.get("members", [])
+    if not name or not address:
+        return jsonify({"success": False, "message": "Missing fields"}), 400
 
-    if (
-        not group_name
-        or not address
-        or not isinstance(members, list)
-        or len(members) == 0
-    ):
-        return jsonify({"success": False, "message": "Missing required fields"}), 400
+    # 1️⃣  create the group with ONLY the creator inside
+    group_doc = {
+        "name": name,
+        "address": address,
+        "members": [creator_id],
+    }
+    res = db.groups.insert_one(group_doc)
+    group_id = res.inserted_id
 
-    try:
-        # Extract valid member ObjectIds from member dicts (from frontend)
-        member_object_ids = [
-            ObjectId(member["id"])
-            for member in members
-            if isinstance(member, dict)
-            and "id" in member
-            and ObjectId.is_valid(member["id"])
-        ]
+    # 2️⃣  create pending notifications for everyone else
+    note_bulk = []
+    for person in invitee_dicts:
+        uid = person.get("id") if isinstance(person, dict) else None
+        if uid and ObjectId.is_valid(uid) and uid != creator_id_str:
+            note_bulk.append({
+                "senderId":   creator_id,
+                "receiverId": ObjectId(uid),
+                "groupId":    group_id,
+                "status":     "pending",
+                "createdAt":  datetime.utcnow(),
+            })
+    if note_bulk:
+        db.notifications.insert_many(note_bulk)
 
-        # Ensure creator is in the member list
-        if current_user_id not in member_object_ids:
-            member_object_ids.append(current_user_id)
-
-        # Create group object
-        group = {
-            "name": group_name,
-            "address": address,
-            "members": member_object_ids,
-        }
-
-        # Insert into DB
-        db.groups.insert_one(group)
-
-        # Fetch all groups current user belongs to
-        groups_cursor = db.groups.find({"members": current_user_id})
-        groups = [serialize_group(g) for g in groups_cursor]
-
-        return jsonify({"success": True, "groups": groups}), 201
-
-    except Exception as e:
-        print("Error creating group:", str(e))
-        return jsonify({"success": False, "message": "Server error"}), 500
+    # 3️⃣  return the groups the creator belongs to (fresh list)
+    my_groups = db.groups.find({"members": creator_id})
+    return jsonify({
+        "success": True,
+        "groups": [_serialize_group(g) for g in my_groups]
+    }), 201
