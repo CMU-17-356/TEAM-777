@@ -1,12 +1,9 @@
-
-# backend/groupinvite.py
 from datetime import datetime
 from bson import ObjectId
 from flask import request, jsonify
 
-# ------------------------ helpers ------------------------ #
+
 def _serialize_group(group):
-    """Return a lightweight group object for the front‑end."""
     return {
         "id": str(group["_id"]),
         "name": group["name"],
@@ -15,58 +12,54 @@ def _serialize_group(group):
     }
 
 
-# ---------------------- main handler --------------------- #
 def create_group(db):
-    """
-    POST /api/group-create
-    Body: {
-        "creatorId": "...",
-        "groupName": "...",
-        "address": "...",
-        "members": [ { "id": "..." }, ... ]   # people you want to invite
-    }
-    """
     data = request.get_json(force=True)
 
     creator_id_str = data.get("creatorId", "")
     if not ObjectId.is_valid(creator_id_str):
         return jsonify({"success": False, "message": "Invalid creatorId"}), 400
-    creator_id = ObjectId(creator_id_str)
+    creator_oid = ObjectId(creator_id_str)
 
-    name    = data.get("groupName", "").strip()
-    address = data.get("address",    "").strip()
-    invitee_dicts = data.get("members", [])  # list of dicts
+    name = data.get("groupName", "").strip()
+    address = data.get("address", "").strip()
+    invitees = data.get("members", [])
 
     if not name or not address:
         return jsonify({"success": False, "message": "Missing fields"}), 400
 
-    # 1️⃣  create the group with ONLY the creator inside
-    group_doc = {
-        "name": name,
-        "address": address,
-        "members": [creator_id],
-    }
-    res = db.groups.insert_one(group_doc)
+    res = db.groups.insert_one(
+        {
+            "name": name,
+            "address": address,
+            "members": [creator_oid],
+        }
+    )
     group_id = res.inserted_id
 
-    # 2️⃣  create pending notifications for everyone else
-    note_bulk = []
-    for person in invitee_dicts:
+    creator_doc = db.users.find_one({"_id": creator_oid}, {"username": 1})
+    creator_name = creator_doc["username"] if creator_doc else "Someone"
+
+    notes = []
+    for person in invitees:
         uid = person.get("id") if isinstance(person, dict) else None
         if uid and ObjectId.is_valid(uid) and uid != creator_id_str:
-            note_bulk.append({
-                "senderId":   creator_id,
-                "receiverId": ObjectId(uid),
-                "groupId":    group_id,
-                "status":     "pending",
-                "createdAt":  datetime.utcnow(),
-            })
-    if note_bulk:
-        db.notifications.insert_many(note_bulk)
+            notes.append(
+                {
+                    "senderId": creator_oid,
+                    "receiverId": ObjectId(uid),
+                    "groupId": group_id,
+                    "status": "pending",
+                    "type": "invite",
+                    "createdAt": datetime.utcnow(),
+                    "senderName": creator_name,
+                    "groupName": name,
+                }
+            )
+    if notes:
+        db.notifications.insert_many(notes)
 
-    # 3️⃣  return the groups the creator belongs to (fresh list)
-    my_groups = db.groups.find({"members": creator_id})
-    return jsonify({
-        "success": True,
-        "groups": [_serialize_group(g) for g in my_groups]
-    }), 201
+    my_groups = db.groups.find({"members": creator_oid})
+    return (
+        jsonify({"success": True, "groups": [_serialize_group(g) for g in my_groups]}),
+        201,
+    )

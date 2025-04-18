@@ -1,5 +1,3 @@
-
-
 import os
 import subprocess
 from flask import Flask, jsonify, send_from_directory, request
@@ -175,11 +173,10 @@ def handle_get_transactions(group_id):
     return get_transactions(db, group_id)
 
 
-
-
 @app.route("/api/notifications", methods=["POST"])
 def notifications_list():
     return list_notifications(db)
+
 
 @app.route("/api/notifications/<string:invite_id>", methods=["PATCH"])
 def notifications_respond(invite_id):

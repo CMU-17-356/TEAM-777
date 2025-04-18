@@ -1,43 +1,42 @@
 import React from 'react';
 import { Card, Button, Typography } from 'antd';
+import { Notification } from '../types';
 
 const { Text } = Typography;
 
-export interface InviteCardProps {
-  groupName: string;
-  invite: {
-    id: string;
-    groupId: string;
-    senderId: string;
-  };
-  onRespond: (id: string, action: 'accept' | 'decline') => void;
+interface InviteCardProps {
+  invite: Notification;
+  onRespond: (_id: string, _action: 'accept' | 'decline') => void;
 }
 
-const InviteCard: React.FC<InviteCardProps> = ({ groupName, invite, onRespond }) => (
+const InviteCard: React.FC<InviteCardProps> = ({ invite, onRespond }) => (
   <Card
-    style={{ marginBottom: 12, borderRadius: 12, background: '#fffefc' }}
-    bodyStyle={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+    style={{ marginBottom: 12, borderRadius: 12 }}
+    bodyStyle={{ display: 'flex', justifyContent: 'space-between' }}
   >
     <Text>
-      Invitation to&nbsp;
-      <Text strong style={{ color: '#7D6DC2' }}>
-        {groupName || 'a group'}
-      </Text>
+      <Text strong>{invite.senderName || 'Someone'}</Text>
+      &nbsp;invited you to&nbsp;
+      <Text strong>{invite.groupName || invite.groupId.slice(-6)}</Text>
     </Text>
 
-    <span>
+    <div>
       <Button
         size="small"
         type="primary"
-        style={{ marginRight: 8 }}
         onClick={() => onRespond(invite.id, 'accept')}
+        style={{ marginRight: 8 }}
       >
         Accept
       </Button>
-      <Button size="small" danger onClick={() => onRespond(invite.id, 'decline')}>
+      <Button
+        size="small"
+        danger
+        onClick={() => onRespond(invite.id, 'decline')}
+      >
         Decline
       </Button>
-    </span>
+    </div>
   </Card>
 );
 

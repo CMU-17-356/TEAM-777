@@ -1,14 +1,12 @@
-
-
-import React, { useEffect, useState } from 'react';
-import { Button, Typography, Spin, message, Card, Badge, Drawer } from 'antd';
-import { PlusOutlined, BellOutlined } from '@ant-design/icons';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Button, Typography, Spin, message, Card } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 import GroupCard from '../../components/GroupCard';
-import InviteCard from '../../components/InviteCard';
-import { Group, NotificationInvite } from '../../types';
+import NotificationBell from '../../components/NotificationBell';
+import { Group } from '../../types';
 import { API_BASE_URL } from '../../App';
 
 const { Title } = Typography;
@@ -19,55 +17,29 @@ const GroupsPage: React.FC = () => {
   const { userId } = location.state || {};
 
   const [groups, setGroups] = useState<Group[]>([]);
-  const [invites, setInvites] = useState<NotificationInvite[]>([]);
   const [loading, setLoading] = useState(true);
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
- 
-  const fetchGroups = async () => {
+  const fetchGroups = useCallback(async () => {
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/groups-by-user`, { userId });
+      const res = await axios.post(`${API_BASE_URL}/api/groups-by-user`, {
+        userId,
+      });
       setGroups(res.data.groups || []);
     } catch (err) {
       message.error((err as Error).message);
     }
-  };
-
-  const fetchInvites = async () => {
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/notifications`, { userId });
-      setInvites(res.data.notifications || []);
-    } catch (err) {
-      message.error('Could not load invitations');
-    }
-  };
-
-  const respondInvite = async (inviteId: string, action: 'accept' | 'decline') => {
-    try {
-      await axios.patch(`${API_BASE_URL}/api/notifications/${inviteId}`, {
-        userId,
-        action,
-      });
-      await Promise.all([fetchInvites(), fetchGroups()]); // refresh both lists
-      message.success(`Invitation ${action}ed!`);
-    } catch {
-      message.error('Something went wrong');
-    }
-  };
-
-  
-  useEffect(() => {
-    if (!userId) return;
-    (async () => {
-      setLoading(true);
-      await Promise.all([fetchGroups(), fetchInvites()]);
-      setLoading(false);
-    })();
   }, [userId]);
 
-  
+  useEffect(() => {
+    if (!userId) return;
+    setLoading(true);
+    fetchGroups().finally(() => setLoading(false));
+  }, [fetchGroups, userId]);
+
   const handleAddGroup = () => navigate('/group-invite', { state: { userId } });
-  const handleCardClick = (gid: string) => navigate('/menu', { state: { userId, groupId: gid } });
+
+  const handleCardClick = (gid: string) =>
+    navigate('/menu', { state: { userId, groupId: gid } });
 
   return (
     <div
@@ -78,7 +50,6 @@ const GroupsPage: React.FC = () => {
       }}
     >
       <div style={{ maxWidth: 700, margin: '0 auto' }}>
-        {/* header row */}
         <div
           style={{
             display: 'flex',
@@ -91,17 +62,10 @@ const GroupsPage: React.FC = () => {
             Your Groups
           </Title>
 
-          <span style={{ display: 'flex', gap: 12 }}>
-            {/* invite bell */}
-            <Badge count={invites.length} offset={[0, 2]}>
-              <Button
-                shape="circle"
-                icon={<BellOutlined />}
-                onClick={() => setDrawerOpen(true)}
-              />
-            </Badge>
-
-            {/* add group */}
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            {userId && (
+              <NotificationBell userId={userId} refreshGroups={fetchGroups} />
+            )}
             <Button
               type="primary"
               shape="circle"
@@ -113,7 +77,7 @@ const GroupsPage: React.FC = () => {
               }}
               onClick={handleAddGroup}
             />
-          </span>
+          </div>
         </div>
 
         {loading ? (
@@ -142,32 +106,6 @@ const GroupsPage: React.FC = () => {
           </p>
         )}
       </div>
-
-      {/* slide‑over with invitations */}
-      <Drawer
-        title="Group Invitations"
-        placement="right"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        width={360}
-      >
-        {invites.length === 0 ? (
-          <p>No pending invites 🎉</p>
-        ) : (
-          invites.map((inv) => {
-            
-            const g = groups.find((gr) => gr.id === inv.groupId);
-            return (
-              <InviteCard
-                key={inv.id}
-                groupName={g?.name || inv.groupId}
-                invite={inv}
-                onRespond={respondInvite}
-              />
-            );
-          })
-        )}
-      </Drawer>
     </div>
   );
 };
