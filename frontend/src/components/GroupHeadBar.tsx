@@ -3,87 +3,82 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Avatar, Typography, Button } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+
 import { API_BASE_URL } from '../App';
+import NotificationBell from './NotificationBell';
 
 const { Title } = Typography;
 
-type GroupMember = {
-  username: string;
-};
-
-type GroupData = {
-  groupName: string;
-  members: GroupMember[];
-};
+type GroupMember = { username: string };
+type GroupData = { groupName: string; members: GroupMember[] };
 
 const GroupHeaderBar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { groupId } =
+  const { userId, groupId } =
     (location.state as { userId?: string; groupId?: string }) || {};
+
   const [groupData, setGroupData] = useState<GroupData | null>(null);
 
   useEffect(() => {
     if (!groupId) return;
 
-    const fetchGroupInfo = async () => {
+    (async () => {
       try {
-        const response = await axios.post(
-          `${API_BASE_URL}/api/groups/${groupId}`,
-        );
-        setGroupData(response.data);
-      } catch (error) {
-        console.error('Error fetching group data:', error);
+        const res = await axios.post(`${API_BASE_URL}/api/groups/${groupId}`);
+        setGroupData(res.data);
+      } catch (err) {
+        console.error('Error fetching group data:', err);
       }
-    };
-
-    fetchGroupInfo();
+    })();
   }, [groupId]);
 
   return (
     <div
       style={{
         display: 'flex',
-        alignItems: 'flex-end', // push content to bottom of bar
-        padding: '0 24px 16px 24px', // more bottom padding
+        alignItems: 'flex-end',
+        padding: '0 24px 16px 24px',
         backgroundColor: '#f0f0f0',
         borderRadius: 12,
         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-        height: '100px', // total bar height
-        marginTop: '0px', // align top
-        position: 'relative', // optional if you want to pin this to top later
+        height: 100,
+        marginTop: 0,
       }}
     >
-      {/* Back Button */}
       <Button
         type="text"
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate(-1)}
-        style={{ fontSize: '20px', color: '#7D6DC2' }}
+        style={{ fontSize: 20, color: '#7D6DC2' }}
       />
 
-      {/* Avatars / Initials */}
-      <div style={{ display: 'flex', gap: '8px', marginLeft: '30px' }}>
-        {groupData?.members?.map((member, index) => {
-          const initials = member.username.charAt(0).toUpperCase();
-          return (
-            <Avatar
-              key={index}
-              style={{ backgroundColor: '#7D6DC2', color: '#fff' }}
-              size="large"
-            >
-              {initials}
-            </Avatar>
-          );
-        })}
+      <div style={{ display: 'flex', gap: 8, marginLeft: 30 }}>
+        {groupData?.members?.map((m, i) => (
+          <Avatar
+            key={i}
+            size="large"
+            style={{ backgroundColor: '#7D6DC2', color: '#fff' }}
+          >
+            {m.username.charAt(0).toUpperCase()}
+          </Avatar>
+        ))}
       </div>
 
-      {/* Group Name */}
-      <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+      <div
+        style={{
+          marginLeft: 'auto',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+        }}
+      >
         <Title level={4} style={{ margin: 0 }}>
           {groupData?.groupName ? `#${groupData.groupName}` : 'Loading...'}
         </Title>
+
+        {userId && <NotificationBell userId={userId} />}
       </div>
     </div>
   );

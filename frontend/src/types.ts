@@ -3,9 +3,22 @@ export type User = {
   name: string;
 };
 
-export type Group = {
+export interface Group {
   id: string;
   name: string;
   address?: string;
   members: User[];
-};
+}
+
+export interface Notification {
+  id: string;
+  groupId: string;
+  senderId: string;
+  status: 'pending' | 'unread' | 'accepted' | 'declined' | 'read';
+  type: 'invite' | 'chore';
+  title?: string;
+  createdAt: string;
+
+  senderName?: string;
+  groupName?: string;
+}

@@ -1,73 +1,65 @@
-from flask import Flask, request, jsonify
+from datetime import datetime
 from bson import ObjectId
+from flask import request, jsonify
 
-app = Flask(__name__)
 
-
-# Serialize group for output (without notes and creatorId)
-def serialize_group(group):
+def _serialize_group(group):
     return {
         "id": str(group["_id"]),
         "name": group["name"],
         "address": group["address"],
-        "members": [str(member_id) for member_id in group["members"]],
+        "members": [str(mid) for mid in group["members"]],
     }
 
 
-# Group creation endpoint
 def create_group(db):
-    data = request.get_json()
+    data = request.get_json(force=True)
 
-    # Extract creator ID
-    current_user_id_str = data.get("creatorId")
-    if not current_user_id_str or not ObjectId.is_valid(current_user_id_str):
+    creator_id_str = data.get("creatorId", "")
+    if not ObjectId.is_valid(creator_id_str):
         return jsonify({"success": False, "message": "Invalid creatorId"}), 400
+    creator_oid = ObjectId(creator_id_str)
 
-    current_user_id = ObjectId(current_user_id_str)
-
-    # Extract and validate form fields
-    group_name = data.get("groupName", "").strip()
+    name = data.get("groupName", "").strip()
     address = data.get("address", "").strip()
-    members = data.get("members", [])
+    invitees = data.get("members", [])
 
-    if (
-        not group_name
-        or not address
-        or not isinstance(members, list)
-        or len(members) == 0
-    ):
-        return jsonify({"success": False, "message": "Missing required fields"}), 400
+    if not name or not address:
+        return jsonify({"success": False, "message": "Missing fields"}), 400
 
-    try:
-        # Extract valid member ObjectIds from member dicts (from frontend)
-        member_object_ids = [
-            ObjectId(member["id"])
-            for member in members
-            if isinstance(member, dict)
-            and "id" in member
-            and ObjectId.is_valid(member["id"])
-        ]
-
-        # Ensure creator is in the member list
-        if current_user_id not in member_object_ids:
-            member_object_ids.append(current_user_id)
-
-        # Create group object
-        group = {
-            "name": group_name,
+    res = db.groups.insert_one(
+        {
+            "name": name,
             "address": address,
-            "members": member_object_ids,
+            "members": [creator_oid],
         }
+    )
+    group_id = res.inserted_id
 
-        # Insert into DB
-        db.groups.insert_one(group)
+    creator_doc = db.users.find_one({"_id": creator_oid}, {"username": 1})
+    creator_name = creator_doc["username"] if creator_doc else "Someone"
 
-        # Fetch all groups current user belongs to
-        groups_cursor = db.groups.find({"members": current_user_id})
-        groups = [serialize_group(g) for g in groups_cursor]
+    notes = []
+    for person in invitees:
+        uid = person.get("id") if isinstance(person, dict) else None
+        if uid and ObjectId.is_valid(uid) and uid != creator_id_str:
+            notes.append(
+                {
+                    "senderId": creator_oid,
+                    "receiverId": ObjectId(uid),
+                    "groupId": group_id,
+                    "status": "pending",
+                    "type": "invite",
+                    "createdAt": datetime.utcnow(),
+                    "senderName": creator_name,
+                    "groupName": name,
+                }
+            )
+    if notes:
+        db.notifications.insert_many(notes)
 
-        return jsonify({"success": True, "groups": groups}), 201
-
-    except Exception as e:
-        print("Error creating group:", str(e))
-        return jsonify({"success": False, "message": "Server error"}), 500
+    my_groups = db.groups.find({"members": creator_oid})
+    return (
+        jsonify({"success": True, "groups": [_serialize_group(g) for g in my_groups]}),
+        201,
+    )

@@ -1,20 +1,16 @@
 from flask import request, jsonify
 from bson.objectid import ObjectId
 from dateutil.rrule import rrule, WEEKLY
-from datetime import datetime, timedelta
-
-# CREATE EVENT
-from flask import request, jsonify
-from bson.objectid import ObjectId
-from dateutil.rrule import rrule, WEEKLY
 from datetime import datetime
+
+from notifications import _send_notification
 
 
 def create_event(db, group_id):
     data = request.get_json()
 
-    required_fields = ["title", "start", "end", "people"]
-    if not all(field in data for field in required_fields):
+    required = ["title", "start", "end", "people"]
+    if not all(k in data for k in required):
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
@@ -24,39 +20,38 @@ def create_event(db, group_id):
         return jsonify({"error": "Invalid date format"}), 400
 
     now = datetime.now(start_dt.tzinfo)
-
-    # ❌ Rule 1: Start must be in the future
     if start_dt < now:
         return jsonify({"error": "Start time must be in the future"}), 400
-
-    # ❌ Rule 2: Start must be before end
     if start_dt >= end_dt:
         return jsonify({"error": "Start time must be before end time"}), 400
-
-    # ❌ Rule 3: Must be same calendar day
     if start_dt.date() != end_dt.date():
-        return jsonify({"error": "Start and end times must be on the same day"}), 400
-
-    # ❌ Rule 4: Title must be short
+        return jsonify({"error": "Start and end must be on the same day"}), 400
     if len(data["title"]) > 20:
-        return jsonify({"error": "Title must be at most 20 characters"}), 400
-
-    # ❌ Rule 5: Description length
+        return jsonify({"error": "Title ≤ 20 characters"}), 400
     if len(data.get("description", "")) > 100:
-        return jsonify({"error": "Description must be at most 100 characters"}), 400
+        return jsonify({"error": "Description ≤ 100 characters"}), 400
+
+    people_ids = []
+    for person in data["people"]:
+        if ObjectId.is_valid(person):
+            people_ids.append(person)
+        else:
+            doc = db.users.find_one({"username": person}, {"_id": 1})
+            if doc:
+                people_ids.append(str(doc["_id"]))
+    data["people"] = people_ids
 
     duration = end_dt - start_dt
     repeat = data.get("repeat", "None")
-    repeat_count = 5
     interval = 1 if repeat == "Weekly" else 2 if repeat == "Biweekly" else 0
+    repeat_count = 5
 
-    events_to_insert = []
-
-    if interval > 0:
+    docs = []
+    if interval:
         for dt in rrule(
             WEEKLY, dtstart=start_dt, interval=interval, count=repeat_count
         ):
-            events_to_insert.append(
+            docs.append(
                 {
                     "title": data["title"],
                     "start": dt.isoformat(),
@@ -71,7 +66,7 @@ def create_event(db, group_id):
                 }
             )
     else:
-        events_to_insert.append(
+        docs.append(
             {
                 "title": data["title"],
                 "start": data["start"],
@@ -86,7 +81,34 @@ def create_event(db, group_id):
             }
         )
 
-    result = db.events.insert_many(events_to_insert)
+    result = db.events.insert_many(docs)
+
+    grp = db.groups.find_one({"_id": ObjectId(group_id)}, {"name": 1})
+    group_name = grp["name"] if grp and "name" in grp else "Unknown Group"
+
+    creator_id = (
+        ObjectId(data.get("created_by"))
+        if data.get("created_by") and ObjectId.is_valid(data["created_by"])
+        else None
+    )
+
+    for pid in data["people"]:
+        if not ObjectId.is_valid(pid):
+            continue
+        if creator_id and ObjectId(pid) == creator_id:
+            continue
+        _send_notification(
+            db,
+            sender_id=creator_id,
+            receiver_id=ObjectId(pid),
+            group_id=group_id,
+            ntype="chore",
+            extra={
+                "title": data["title"],
+                "groupName": group_name,
+            },
+        )
+
     return (
         jsonify(
             {
@@ -98,47 +120,33 @@ def create_event(db, group_id):
     )
 
 
-# EDIT EVENT
 def edit_event(db, group_id, event_id):
     data = request.get_json()
     update_fields = {}
 
-    # Extract for validation
     title = data.get("title")
-    start_str = data.get("start")
-    end_str = data.get("end")
-    description = data.get("description", "")
+    start = data.get("start")
+    end = data.get("end")
+    desc = data.get("description", "")
 
-    # Validate datetime formats
     try:
-        start_dt = datetime.fromisoformat(start_str) if start_str else None
-        end_dt = datetime.fromisoformat(end_str) if end_str else None
+        start_dt = datetime.fromisoformat(start) if start else None
+        end_dt = datetime.fromisoformat(end) if end else None
     except ValueError as ve:
         return jsonify({"error": f"Invalid datetime format: {ve}"}), 400
 
-    now = datetime.now(start_dt.tzinfo)
-
-    # ✅ Rule 1: Future start time
+    now = datetime.now(start_dt.tzinfo) if start_dt else datetime.utcnow()
     if start_dt and start_dt < now:
-        return jsonify({"error": "Start time must be in the future"}), 400
-
-    # ✅ Rule 2: Start before end
+        return jsonify({"error": "Start must be in the future"}), 400
     if start_dt and end_dt and start_dt >= end_dt:
-        return jsonify({"error": "Start time must be before end time"}), 400
-
-    # ✅ Rule 3: Same day check
+        return jsonify({"error": "Start before end"}), 400
     if start_dt and end_dt and start_dt.date() != end_dt.date():
-        return jsonify({"error": "Start and end times must be on the same day"}), 400
-
-    # ✅ Rule 4: Title length
+        return jsonify({"error": "Must be same day"}), 400
     if title and len(title) > 20:
-        return jsonify({"error": "Title must be at most 20 characters"}), 400
+        return jsonify({"error": "Title too long"}), 400
+    if desc and len(desc) > 100:
+        return jsonify({"error": "Description too long"}), 400
 
-    # ✅ Rule 5: Description length
-    if description and len(description) > 100:
-        return jsonify({"error": "Description must be at most 100 characters"}), 400
-
-    # Prepare update fields
     for field in ["title", "start", "end", "description", "people", "repeat"]:
         if field in data:
             key = (
@@ -148,42 +156,35 @@ def edit_event(db, group_id, event_id):
             )
             update_fields[key] = data[field]
 
-    result = db.events.update_one(
+    res = db.events.update_one(
         {"_id": ObjectId(event_id), "group_id": group_id}, {"$set": update_fields}
     )
 
-    if result.matched_count == 0:
-        return jsonify({"error": "Event not found or does not belong to group"}), 404
+    if res.matched_count == 0:
+        return jsonify({"error": "Event not found"}), 404
 
-    return jsonify({"message": "Event updated successfully"}), 200
+    return jsonify({"message": "Event updated"}), 200
 
 
-# GET EVENTS BY GROUP AND RANGE
 def get_events(db, group_id):
     start = request.args.get("start")
     end = request.args.get("end")
 
-    try:
-        query = {"group_id": group_id}
-        if start and end:
-            query["$or"] = [
-                {"start": {"$gte": start, "$lt": end}},
-                {"end": {"$gte": start, "$lt": end}},
-            ]
-        events = list(db.events.find(query))
-        for event in events:
-            event["_id"] = str(event["_id"])
-        return jsonify(events), 200
+    query = {"group_id": group_id}
+    if start and end:
+        query["$or"] = [
+            {"start": {"$gte": start, "$lt": end}},
+            {"end": {"$gte": start, "$lt": end}},
+        ]
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    events = list(db.events.find(query))
+    for ev in events:
+        ev["_id"] = str(ev["_id"])
+    return jsonify(events), 200
 
 
-# DELETE EVENT BY GROUP AND ID
 def delete_event(db, group_id, event_id):
-    result = db.events.delete_one({"_id": ObjectId(event_id), "group_id": group_id})
-
-    if result.deleted_count == 0:
-        return jsonify({"error": "Event not found or not owned by group"}), 404
-
-    return jsonify({"message": "Event deleted successfully"}), 200
+    res = db.events.delete_one({"_id": ObjectId(event_id), "group_id": group_id})
+    if res.deleted_count == 0:
+        return jsonify({"error": "Event not found"}), 404
+    return jsonify({"message": "Event deleted"}), 200
