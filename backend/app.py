@@ -15,6 +15,7 @@ from group.groupSearch import groups_by_user, group_by_id, get_users_in_group
 from calendars.event import create_event, delete_event, edit_event, get_events
 from bills.billSplit import handle_add_expense
 from bills.transactions import get_transactions
+from notifications import list_notifications, respond_invite
 
 # Load environment variables from .env file (for local testing)
 load_dotenv()
@@ -170,6 +171,16 @@ def add_expense():
 @app.route("/api/transactions/<string:group_id>", methods=["GET"])
 def handle_get_transactions(group_id):
     return get_transactions(db, group_id)
+
+
+@app.route("/api/notifications", methods=["POST"])
+def notifications_list():
+    return list_notifications(db)
+
+
+@app.route("/api/notifications/<string:invite_id>", methods=["PATCH"])
+def notifications_respond(invite_id):
+    return respond_invite(db, invite_id)
 
 
 if __name__ == "__main__":
