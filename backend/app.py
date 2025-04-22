@@ -15,6 +15,8 @@ from group.groupSearch import groups_by_user, group_by_id, get_users_in_group
 from calendars.event import create_event, delete_event, edit_event, get_events
 from bills.billSplit import handle_add_expense
 from bills.transactions import get_transactions
+from grocery.grocery import handle_add_grocery, get_formatted_groceries
+
 
 # Load environment variables from .env file (for local testing)
 load_dotenv()
@@ -170,6 +172,15 @@ def add_expense():
 @app.route("/api/transactions/<string:group_id>", methods=["GET"])
 def handle_get_transactions(group_id):
     return get_transactions(db, group_id)
+
+@app.route("/auth/groceryAdd", methods=["POST"])
+def add_grocery():
+    return handle_add_grocery(db)
+
+@app.route("/api/groceries/<string:group_id>", methods=["GET"])
+def get_groceries(group_id):
+    groceries = get_formatted_groceries(db, group_id)
+    return jsonify(groceries), 200
 
 
 if __name__ == "__main__":
