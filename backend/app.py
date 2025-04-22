@@ -174,6 +174,12 @@ def add_expense():
 def handle_get_transactions(group_id):
     return get_transactions(db, group_id)
 
+@app.route("/api/groceryAdd", methods=["POST"])  # added 
+def grocery_add():
+    # Your logic here
+    return jsonify({"message": "Item added"}), 200
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)
