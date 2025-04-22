@@ -63,7 +63,7 @@ const GroceryPage: React.FC = () => {
         place: values.place,
         quantity: values.quantity,
       };
-      const response = await axios.post(`${API_BASE_URL}/auth/groceryAdd`, payload);
+      const response = await axios.post(`${API_BASE_URL}/api/groceryAdd`, payload);
       if (response.data.success) {
         message.success('Grocery item added');
         setIsModalVisible(false);
