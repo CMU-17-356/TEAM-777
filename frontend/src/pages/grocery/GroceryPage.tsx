@@ -35,7 +35,18 @@ const GroceryPage: React.FC = () => {
   // Fetch grocery items from backend
   const fetchGroceryItems = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/groceries/${groupId}`);
+      
+      const response = await axios.get(
+        `${API_BASE_URL}/api/groceries/${groupId}?t=${Date.now()}`,
+        {
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        }
+      );
+      console.log("Fetched groceries:", response.data);  // 🔍 log response, debug 
+
+
       if (Array.isArray(response.data)) {
         setGroceryList(response.data);
       } else {
@@ -52,6 +63,7 @@ const GroceryPage: React.FC = () => {
       fetchGroceryItems();
     }
   }, [groupId, fetchGroceryItems]);
+  console.log("Current groceryList state:", groceryList);  // 👀 Watch state update. debug. 
 
   // Submit handler
   const handleAddGroceryItem = async (values: GroceryItem) => {
