@@ -2,6 +2,7 @@ from flask import request, jsonify
 from datetime import datetime
 from bson import ObjectId
 
+
 def handle_add_grocery(db):
     """Add a grocery request to the database."""
     try:
@@ -11,7 +12,10 @@ def handle_add_grocery(db):
 
         required_fields = ["_id", "requester", "item", "place"]
         if not all(field in data for field in required_fields):
-            return jsonify({"success": False, "message": "Missing required fields"}), 400
+            return (
+                jsonify({"success": False, "message": "Missing required fields"}),
+                400,
+            )
 
         group_id = data["_id"]
         timestamp = datetime.utcnow().isoformat()
@@ -19,20 +23,28 @@ def handle_add_grocery(db):
         new_grocery = {
             "requester": data["requester"],
             "item": data["item"],
-			"quantity": data.get("quantity", "1"),  # default to 1 if not provided
+            "quantity": data.get("quantity", "1"),  # default to 1 if not provided
             "place": data["place"],
-            "timestamp": timestamp
+            "timestamp": timestamp,
         }
 
         collection = db.groceries
-        record = collection.find_one({"_id": group_id}) or {"_id": group_id, "items": {}}
+        record = collection.find_one({"_id": group_id}) or {
+            "_id": group_id,
+            "items": {},
+        }
         item_id = str(len(record["items"]) + 1)
         record["items"][item_id] = {"content": new_grocery}
 
         collection.update_one({"_id": group_id}, {"$set": record}, upsert=True)
 
         groceries = get_formatted_groceries(db, group_id)
-        return jsonify({"success": True, "message": "Grocery added", "groceries": groceries}), 200
+        return (
+            jsonify(
+                {"success": True, "message": "Grocery added", "groceries": groceries}
+            ),
+            200,
+        )
 
     except Exception as e:
         print("Error in handle_add_grocery:", str(e))
@@ -51,14 +63,16 @@ def get_formatted_groceries(db, group_id):
             requester = db.users.find_one({"_id": ObjectId(content["requester"])})
             requester_email = requester["email"] if requester else "Unknown"
 
-            groceries.append({
-                "id": item_id,
-                "item": content["item"],
-				"quantity": content.get("quantity", "1"),  # default fallback
-                "place": content["place"],
-                "requester": requester_email,
-                "date": content["timestamp"]
-            })
+            groceries.append(
+                {
+                    "id": item_id,
+                    "item": content["item"],
+                    "quantity": content.get("quantity", "1"),  # default fallback
+                    "place": content["place"],
+                    "requester": requester_email,
+                    "date": content["timestamp"],
+                }
+            )
 
         groceries.sort(key=lambda x: x["date"], reverse=True)
         return groceries
@@ -67,6 +81,7 @@ def get_formatted_groceries(db, group_id):
         print("Error formatting groceries:", str(e))
         return []
 
+
 def handle_delete_grocery(db):
     try:
         data = request.get_json()
@@ -74,11 +89,13 @@ def handle_delete_grocery(db):
         item_id = data.get("itemId")
 
         if not group_id or not item_id:
-            return jsonify({"success": False, "message": "Missing groupId or itemId"}), 400
+            return (
+                jsonify({"success": False, "message": "Missing groupId or itemId"}),
+                400,
+            )
 
         result = db.groceries.update_one(
-            {"_id": group_id},
-            {"$unset": {f"items.{item_id}": ""}}
+            {"_id": group_id}, {"$unset": {f"items.{item_id}": ""}}
         )
 
         return jsonify({"success": True, "message": "Item deleted"}), 200
