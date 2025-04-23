@@ -66,3 +66,23 @@ def get_formatted_groceries(db, group_id):
     except Exception as e:
         print("Error formatting groceries:", str(e))
         return []
+
+def handle_delete_grocery(db):
+    try:
+        data = request.get_json()
+        group_id = data.get("groupId")
+        item_id = data.get("itemId")
+
+        if not group_id or not item_id:
+            return jsonify({"success": False, "message": "Missing groupId or itemId"}), 400
+
+        result = db.groceries.update_one(
+            {"_id": group_id},
+            {"$unset": {f"items.{item_id}": ""}}
+        )
+
+        return jsonify({"success": True, "message": "Item deleted"}), 200
+
+    except Exception as e:
+        print("Error deleting grocery:", str(e))
+        return jsonify({"success": False, "message": str(e)}), 500

@@ -19,11 +19,14 @@ import BottomTabBar from '../../components/BottomTabBar';
 const { Text } = Typography;
 
 interface GroceryItem {
+  id: string;  // for delete item 
   item: string;
   quantity: string;
   place: string;
   requester: string;
 }
+
+
 
 const GroceryPage: React.FC = () => {
   const location = useLocation();
@@ -65,6 +68,20 @@ const GroceryPage: React.FC = () => {
   }, [groupId, fetchGroceryItems]);
   console.log("Current groceryList state:", groceryList);  // 👀 Watch state update. debug. 
 
+  const handleDeleteItem = async (itemId: string) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/api/groceryDelete`, {
+        data: { groupId, itemId },
+      });
+      message.success('Item deleted');
+      fetchGroceryItems(); // refresh list
+    } catch (err) {
+      console.error('Delete failed:', err);
+      message.error('Failed to delete item');
+    }
+  };
+
+  
   // Submit handler
   const handleAddGroceryItem = async (values: GroceryItem) => {
     try {
@@ -113,10 +130,22 @@ const GroceryPage: React.FC = () => {
           border: '1px solid #e5dcff',
         }}
       >        
+      
         <List
           dataSource={groceryList}
           renderItem={(item) => (
-            <List.Item>
+            <List.Item
+              actions={[
+                <Button
+                  danger
+                  type="link"
+                  onClick={() => handleDeleteItem(item.id)}
+                  style={{ padding: 0 }}
+                >
+                  Delete
+                </Button>,
+              ]}
+            >
               <div>
                 <Text strong>{item.quantity} {item.item}</Text>
                 <div style={{ color: '#888' }}>Place: {item.place}</div>
@@ -126,6 +155,7 @@ const GroceryPage: React.FC = () => {
           )}
           locale={{ emptyText: 'No grocery items yet' }}
         />
+
 
       </Card>
 
@@ -202,5 +232,7 @@ const GroceryPage: React.FC = () => {
     </div>
   );
 };
+
+
 
 export default GroceryPage;
