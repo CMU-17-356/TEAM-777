@@ -15,6 +15,13 @@ from group.groupSearch import groups_by_user, group_by_id, get_users_in_group
 from calendars.event import create_event, delete_event, edit_event, get_events
 from bills.billSplit import handle_add_expense
 from bills.transactions import get_transactions
+from grocery.grocery import (
+    handle_add_grocery,
+    get_formatted_groceries,
+    handle_delete_grocery,
+)
+
+
 from notifications import list_notifications, respond_invite
 
 # Load environment variables from .env file (for local testing)
@@ -181,6 +188,23 @@ def notifications_list():
 @app.route("/api/notifications/<string:invite_id>", methods=["PATCH"])
 def notifications_respond(invite_id):
     return respond_invite(db, invite_id)
+
+
+@app.route("/api/groceryAdd", methods=["POST"])
+def grocery_add():
+    return handle_add_grocery(db)
+
+
+@app.route("/api/groceries/<string:group_id>", methods=["GET"])
+def get_groceries(group_id):
+
+    groceries = get_formatted_groceries(db, group_id)
+    return jsonify(groceries)
+
+
+@app.route("/api/groceryDelete", methods=["DELETE"])
+def grocery_delete():
+    return handle_delete_grocery(db)
 
 
 if __name__ == "__main__":
