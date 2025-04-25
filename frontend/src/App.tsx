@@ -16,7 +16,7 @@ import GroupInvite from './pages/group/GroupInvite';
 import Menu from './pages/group/menu';
 import Calendar from './pages/calendar/CalendarPage';
 import BillsPage from './pages/bills/Bills';
-import GroceryPage from './pages/grocery/GroceryPage';
+import Grocery from './pages/grocery/Grocery';
 
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
@@ -55,7 +55,7 @@ const App: React.FC = () => {
         <Route path="/menu" element={<Menu />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/bills" element={<BillsPage />} />
-        <Route path="/grocery" element={<GroceryPage />} />
+        <Route path="/grocery" element={<Grocery />} />
       </Routes>
     </Router>
   );

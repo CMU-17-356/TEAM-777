@@ -19,6 +19,9 @@ from grocery.grocery import (
     handle_add_grocery,
     get_formatted_groceries,
     handle_delete_grocery,
+    handle_edit_grocery,
+    handle_accept_grocery,
+    grocery_remove_accept,
 )
 
 
@@ -44,7 +47,44 @@ db = client["DEV"]  # Change "mydatabase" to your database name
 collection = db["TEST"]  # Change "mycollection" to your collection name
 print("MONGO_URI =", os.getenv("MONGO_URI"))
 
+
 # db.users.delete_one({"email": "jianingshi1417@gmail.com"})
+def migrate_database():
+    """Function to add new fields (acceptedBy, purchaseTime) to all grocery items."""
+    try:
+        # Fetch all groups in the groceries collection
+        groups = db.groceries.find()
+
+        for group in groups:
+            group_id = group["_id"]
+
+            # Check if "items" exists in the group
+            if "items" in group:
+                for item_id, item_data in group["items"].items():
+                    # For each item, add the new fields (if they don't exist)
+                    item_content = item_data["content"]
+
+                    if "acceptedBy" not in item_content:
+                        item_content["acceptedBy"] = None  # Default to None
+                    if "purchaseTime" not in item_content:
+                        item_content["purchaseTime"] = None  # Default to None
+
+                    # Update the item in the database
+                    db.groceries.update_one(
+                        {"_id": group_id},
+                        {"$set": {f"items.{item_id}.content": item_content}},
+                    )
+
+        print(
+            "Database migration completed successfully. Fields 'acceptedBy' and 'purchaseTime' added."
+        )
+
+    except Exception as e:
+        print(f"Error during database migration: {str(e)}")
+
+
+# Run the migration function
+# migrate_database()
 
 
 def get_api_base_url():
@@ -202,9 +242,24 @@ def get_groceries(group_id):
     return jsonify(groceries)
 
 
+@app.route("/api/groceryEdit", methods=["PUT"])
+def grocery_edit():
+    return handle_edit_grocery(db)
+
+
+@app.route("/api/groceryAccept", methods=["POST"])
+def grocery_accept():
+    return handle_accept_grocery(db)
+
+
 @app.route("/api/groceryDelete", methods=["DELETE"])
 def grocery_delete():
     return handle_delete_grocery(db)
+
+
+@app.route("/api/groceryRemoveAcceptance", methods=["PUT"])
+def grocery_remove_acceptance():
+    return grocery_remove_accept(db)
 
 
 if __name__ == "__main__":
