@@ -34,14 +34,42 @@ interface Transaction {
 
 const BillsPage: React.FC = () => {
   /* const navigate = useNavigate(); */
+
+  // gets the userId and the groupId of the user
   const location = useLocation();
   const { userId, groupId } = location.state || {};
+
   // const [balance, setBalance] = useState<number>(0);
   // const [_, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [groupMembers, setGroupMembers] = useState<string[]>([]);
+
+  const fetchGroupMembers = async () => {
+    try {
+      console.log('Fetching group members for group:', groupId);
+      const response = await axios.get(
+        `${API_BASE_URL}/api/users/${groupId}`,
+      );
+      console.log('Group members response:', response.data);
+
+      if (response.data.success && response.data.users) {
+
+        // setting to emails?
+        const members = response.data.users.map((user: any) => user.email);
+        console.log('Setting group members:', members);
+        setGroupMembers(members);
+
+      } else {
+        console.error('Failed to fetch group members:', response.data);
+        message.error('Failed to fetch group members');
+      }
+    } catch (error) {
+      console.error('Error fetching group members:', error);
+      message.error('Failed to fetch group members');
+    }
+  };
 
   const fetchTransactions = async () => {
     try {
@@ -86,69 +114,6 @@ const BillsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    // Fetch group members
-    const fetchGroupMembers = async () => {
-      try {
-        console.log('Fetching group members for group:', groupId);
-        const response = await axios.get(
-          `${API_BASE_URL}/api/users/${groupId}`,
-        );
-        console.log('Group members response:', response.data);
-
-        if (response.data.success && response.data.users) {
-          const members = response.data.users.map((user: any) => user.email);
-          console.log('Setting group members:', members);
-          setGroupMembers(members);
-        } else {
-          console.error('Failed to fetch group members:', response.data);
-          message.error('Failed to fetch group members');
-        }
-      } catch (error) {
-        console.error('Error fetching group members:', error);
-        message.error('Failed to fetch group members');
-      }
-    };
-
-    const fetchTransactions = async () => {
-      try {
-        console.log('Fetching transactions for group:', groupId);
-        const response = await axios.get(
-          `${API_BASE_URL}/api/transactions/${groupId}`,
-        );
-        console.log('Transactions response:', response.data);
-
-        if (Array.isArray(response.data)) {
-          setTransactions(response.data);
-          /* const userTransactions = response.data.filter(
-            (t: Transaction) =>
-              t.initiatorId === userId || t.splitBetween.includes(userId),
-          ); */
-
-          /* const calculatedBalance = userTransactions.reduce(
-            (acc: number, t: Transaction) => {
-              const isGiver = t.initiatorId === userId;
-              const isReceiver = t.splitBetween.includes(userId);
-              const splitAmount = t.amount / t.splitBetween.length;
-
-              if (isGiver) acc -= t.amount;
-              if (isReceiver) acc += splitAmount;
-
-              return acc;
-            },
-            0,
-          ); */
-
-          // setBalance(calculatedBalance);
-        } else {
-          console.error('Invalid transactions data:', response.data);
-          message.error('Failed to fetch transactions');
-        }
-      } catch (error) {
-        console.error('Error fetching transactions:', error);
-        message.error('Failed to fetch transactions');
-      }
-    };
-
     if (groupId) {
       console.log('Initializing bills page with groupId:', groupId);
       fetchGroupMembers();
@@ -161,6 +126,8 @@ const BillsPage: React.FC = () => {
   const handleCreateTransaction = async (values: any) => {
     try {
       console.log('Creating transaction with values:', values);
+
+      // no paidBy or date, has groudId
       const payload = {
         _id: groupId,
         initiator: userId,
