@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 from flask import request, jsonify
 from pymongo import MongoClient
-from fastapi import HTTPException
 
 
 def get_user_info(db, user_id):
