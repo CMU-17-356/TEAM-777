@@ -13,12 +13,12 @@ import {
   Radio,
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../../App';
 import GroupHeadBar from '../../components/GroupHeadBar';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
 
 interface Transaction {
@@ -42,7 +42,6 @@ interface MemberBalance {
 }
 
 const BillsPage: React.FC = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const { userId, groupId } = location.state || {};
   const [memberBalances, setMemberBalances] = useState<MemberBalance>({});
@@ -77,7 +76,7 @@ const BillsPage: React.FC = () => {
       } else {
         message.error('Failed to fetch group members');
       }
-    } catch (error) {
+    } catch {
       message.error('Failed to fetch data');
     }
   }, [groupId, userId]);
@@ -140,7 +139,7 @@ const BillsPage: React.FC = () => {
               <Text
                 strong
                 style={{
-                  color: balance > 0 ? '#52c41a' : balance < 0 ? '#f5222d' : '#000000',
+                  color: balance > 0 ? '#f5222d' : balance < 0 ? '#52c41a' : '#000000',
                   fontSize: '0.97em',
                 }}
               >
@@ -177,7 +176,7 @@ const BillsPage: React.FC = () => {
                   <Text
                     strong
                     style={{
-                      color: transaction.type === 'request' ? '#f5222d' : '#52c41a',
+                      color: transaction.type === 'request' ? '#52c41a' : '#f5222d',
                       fontSize: '1em',
                     }}
                   >
