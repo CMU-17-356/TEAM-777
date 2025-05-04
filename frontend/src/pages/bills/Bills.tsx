@@ -1,5 +1,3 @@
-// BillsPage.tsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
@@ -12,13 +10,13 @@ import {
   InputNumber,
   Select,
   message,
+  Radio,
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../../App';
 import GroupHeadBar from '../../components/GroupHeadBar';
-import BottomTabBar from '../../components/BottomTabBar'; // Import the BottomTabBar component
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -27,159 +25,159 @@ interface Transaction {
   id: string;
   description: string;
   amount: number;
-  paidBy: string;
-  initiatorId: string;
+  type: 'request' | 'pay';
   date: string;
-  splitBetween: string[];
+  initiatorUsername: string;
+  recipientUsername: string;
+}
+
+interface GroupMember {
+  id: string;
+  email: string;
+  username: string;
+}
+
+interface MemberBalance {
+  [key: string]: number;
 }
 
 const BillsPage: React.FC = () => {
   const location = useLocation();
   const { userId, groupId } = location.state || {};
+  const [memberBalances, setMemberBalances] = useState<MemberBalance>({});
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
-  const [groupMembers, setGroupMembers] = useState<string[]>([]);
+  const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
+  const [transactionType, setTransactionType] = useState<'request' | 'pay'>('request');
 
-  // Use useCallback so that fetchTransactions won't change on every render
-  const fetchTransactions = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      console.log('Fetching transactions for group:', groupId);
+      // Fetch transactions and member balances
       const response = await axios.get(
         `${API_BASE_URL}/api/transactions/${groupId}`,
+        { params: { user_id: userId } }
       );
-      console.log('Transactions response:', response.data);
-      if (Array.isArray(response.data)) {
-        setTransactions(response.data);
+
+      if (response.data.success) {
+        setMemberBalances(response.data.member_balances);
+        setTransactions(response.data.recent_transactions);
       } else {
-        console.error('Invalid transactions data:', response.data);
         message.error('Failed to fetch transactions');
       }
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-      message.error('Failed to fetch transactions');
-    }
-  }, [groupId]);
 
-  // Similarly, use useCallback for fetchGroupMembers
-  const fetchGroupMembers = useCallback(async () => {
-    try {
-      console.log('Fetching group members for group:', groupId);
-      const response = await axios.get(`${API_BASE_URL}/api/users/${groupId}`);
-      console.log('Group members response:', response.data);
-      if (response.data.success && response.data.users) {
-        const members = response.data.users.map((user: any) => user.email);
-        console.log('Setting group members:', members);
-        setGroupMembers(members);
+      // Fetch group members
+      const membersResponse = await axios.get(
+        `${API_BASE_URL}/api/users/${groupId}`
+      );
+
+      if (membersResponse.data.success) {
+        setGroupMembers(membersResponse.data.users);
       } else {
-        console.error('Failed to fetch group members:', response.data);
         message.error('Failed to fetch group members');
       }
-    } catch (error) {
-      console.error('Error fetching group members:', error);
-      message.error('Failed to fetch group members');
+    } catch {
+      message.error('Failed to fetch data');
     }
-  }, [groupId]);
+  }, [groupId, userId]);
 
   useEffect(() => {
     if (groupId) {
-      console.log('Initializing bills page with groupId:', groupId);
-      fetchGroupMembers();
-      fetchTransactions();
-    } else {
-      console.error('No groupId provided to bills page');
+      fetchData();
     }
-  }, [groupId, userId, fetchGroupMembers, fetchTransactions]);
+  }, [groupId, userId, fetchData]);
 
-  // Function to handle creating a transaction
   const handleCreateTransaction = async (values: any) => {
     try {
-      console.log('Creating transaction with values:', values);
-      const payload = {
-        _id: groupId,
-        initiator: userId,
-        splitters: [...values.splitBetween],
+      const response = await axios.post(`${API_BASE_URL}/api/transactions`, {
+        group_id: groupId,
+        initiator_id: userId,
+        recipient_id: values.recipient,
         amount: values.amount,
         description: values.description,
-      };
-      console.log('Sending payload:', payload);
-      const response = await axios.post(
-        `${API_BASE_URL}/auth/billSplit`,
-        payload,
-      );
-      console.log('Transaction response:', response.data);
+        transaction_type: transactionType,
+      });
+
       if (response.data.success) {
         message.success('Transaction created successfully');
         setIsModalVisible(false);
         form.resetFields();
-        if (Array.isArray(response.data.transactions)) {
-          console.log(
-            'Updating transactions with:',
-            response.data.transactions,
-          );
-          setTransactions(response.data.transactions);
-        } else {
-          console.log('No transactions in response, fetching fresh data');
-          await fetchTransactions();
-        }
+        fetchData();
       } else {
-        console.error('Failed to create transaction:', response.data.message);
         message.error(response.data.message || 'Failed to create transaction');
       }
     } catch (error: any) {
-      console.error(
-        'Error creating transaction:',
-        error.response?.data || error,
-      );
-      message.error(
-        error.response?.data?.message || 'Failed to create transaction',
-      );
+      message.error(error.response?.data?.detail || 'Failed to create transaction');
     }
   };
 
   return (
-    <div
-      style={{
-        position: 'relative', // Set as relative so BottomTabBar can be positioned absolute within it.
-        backgroundColor: '#f9f8ff',
-        minHeight: '100vh',
-        padding: '24px 16px',
-        paddingBottom: '80px', // Reserve space for the bottom tab bar
-      }}
-    >
-      <div style={{ marginBottom: 24 }}>
-        <GroupHeadBar />
-      </div>
+    <div style={{ padding: '24px' }}>
+      <GroupHeadBar />
 
-      {/* Transaction History Card */}
+      {/* Member Balances */}
       <Card
-        title="Transaction History"
-        style={{
-          marginBottom: 24,
-          borderRadius: 12,
-          backgroundColor: '#faf6ff',
-          border: '1px solid #e5dcff',
-        }}
+        title="Member Balances"
+        style={{ marginBottom: 24, borderRadius: 12, backgroundColor: '#faf6ff', border: '1px solid #e5dcff' }}
+      >
+        {Object.entries(memberBalances).map(([memberId, balance]) => {
+          const member = groupMembers.find(m => m.id === memberId);
+          if (!member) return null;
+
+          return (
+            <div
+              key={memberId}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '4px 0',
+                borderBottom: '1px solid #f0f0f0',
+              }}
+            >
+              <Text style={{ fontSize: '0.97em' }}>{member.username}</Text>
+              <Text
+                strong
+                style={{
+                  color: balance > 0 ? '#f5222d' : balance < 0 ? '#52c41a' : '#000000',
+                  fontSize: '0.97em',
+                }}
+              >
+                {balance > 0 ? `You owe $${balance.toFixed(2)}` : 
+                 balance < 0 ? `Owes you $${Math.abs(balance).toFixed(2)}` : 
+                 'Settled up'}
+              </Text>
+            </div>
+          );
+        })}
+      </Card>
+
+      {/* Transaction History */}
+      <Card
+        title="Recent Transactions"
+        style={{ marginBottom: 24, borderRadius: 12, backgroundColor: '#faf6ff', border: '1px solid #e5dcff' }}
       >
         <List
-          dataSource={transactions.slice(0, 5)}
+          dataSource={transactions}
           renderItem={(transaction) => (
-            <List.Item>
+            <List.Item style={{ padding: '8px 0' }}>
               <div style={{ width: '100%' }}>
                 <div
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    marginBottom: 4,
+                    alignItems: 'center',
+                    marginBottom: 2,
                   }}
                 >
-                  <Text strong>{transaction.description}</Text>
+                  <Text strong style={{ fontSize: '1em' }}>
+                    {transaction.description}
+                  </Text>
                   <Text
+                    strong
                     style={{
-                      color:
-                        transaction.initiatorId === userId
-                          ? '#52c41a'
-                          : '#f5222d',
+                      color: transaction.type === 'request' ? '#52c41a' : '#f5222d',
+                      fontSize: '1em',
                     }}
                   >
                     ${transaction.amount.toFixed(2)}
@@ -190,9 +188,14 @@ const BillsPage: React.FC = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     color: '#666',
+                    fontSize: '0.92em',
                   }}
                 >
-                  <Text>Paid by: {transaction.paidBy}</Text>
+                  <Text style={{ flexBasis: '60%' }}>
+                    {transaction.type === 'request' 
+                      ? `${transaction.initiatorUsername} requested from ${transaction.recipientUsername}`
+                      : `${transaction.initiatorUsername} paid ${transaction.recipientUsername}`}
+                  </Text>
                   <Text>{new Date(transaction.date).toLocaleDateString()}</Text>
                 </div>
               </div>
@@ -206,13 +209,18 @@ const BillsPage: React.FC = () => {
       <Button
         type="primary"
         icon={<PlusOutlined />}
-        onClick={() => setIsModalVisible(true)}
+        onClick={() => {
+          form.resetFields();
+          setTransactionType('request');
+          setIsModalVisible(true);
+        }}
         style={{
           width: '100%',
           height: 48,
-          borderRadius: 12,
+          borderRadius: 24,
+          fontSize: '1.1em',
           backgroundColor: '#7D6DC2',
-          border: 'none',
+          borderColor: '#7D6DC2',
         }}
       >
         Add Transaction
@@ -222,67 +230,84 @@ const BillsPage: React.FC = () => {
       <Modal
         title="Create New Transaction"
         open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
+        onCancel={() => {
+          form.resetFields();
+          setIsModalVisible(false);
+        }}
         footer={null}
       >
         <Form form={form} onFinish={handleCreateTransaction} layout="vertical">
+          <Form.Item
+            name="type"
+            label="Transaction Type"
+            initialValue="request"
+          >
+            <Radio.Group
+              onChange={(e) => setTransactionType(e.target.value)}
+              value={transactionType}
+            >
+              <Radio value="request">Request Money</Radio>
+              <Radio value="pay">Pay Money</Radio>
+            </Radio.Group>
+          </Form.Item>
+
           <Form.Item
             name="description"
             label="Description"
             rules={[{ required: true, message: 'Please enter a description' }]}
           >
-            <Input />
+            <Input placeholder="What was this expense for?" />
           </Form.Item>
+
           <Form.Item
             name="amount"
             label="Amount"
-            rules={[{ required: true, message: 'Please enter an amount' }]}
-          >
-            <InputNumber<number>
-              style={{ width: '100%' }}
-              step={0.01}
-              formatter={(value: number | undefined) =>
-                `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-              }
-              parser={(value: string | undefined) =>
-                value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0
-              }
-            />
-          </Form.Item>
-          <Form.Item
-            name="splitBetween"
-            label="Split Between"
             rules={[
-              { required: true, message: 'Please select who to split with' },
+              { required: true, message: 'Please enter an amount' },
+              { type: 'number', min: 0.01, message: 'Amount must be positive' },
             ]}
           >
-            <Select mode="multiple" placeholder="Select members">
-              {groupMembers.map((member) => (
-                <Option key={member} value={member}>
-                  {member}
-                </Option>
-              ))}
+            <InputNumber
+              style={{ width: '100%' }}
+              placeholder="0.00"
+              step={0.01}
+              precision={2}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="recipient"
+            label={transactionType === 'request' ? 'Request From' : 'Pay To'}
+            rules={[{ required: true, message: 'Please select a member' }]}
+          >
+            <Select placeholder="Select member">
+              {groupMembers
+                .filter(member => member.id !== userId)
+                .map((member) => (
+                  <Option key={member.id} value={member.id}>
+                    {member.username}
+                  </Option>
+                ))}
             </Select>
           </Form.Item>
+
           <Form.Item>
-            <Button type="primary" htmlType="submit" block>
+            <Button
+              type="primary"
+              htmlType="submit"
+              style={{
+                width: '100%',
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: '#7D6DC2',
+                borderColor: '#7D6DC2',
+              }}
+            >
               Create Transaction
             </Button>
           </Form.Item>
         </Form>
       </Modal>
-
-      {/* Render the BottomTabBar at the bottom of the container */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
-        <BottomTabBar />
-      </div>
     </div>
   );
 };

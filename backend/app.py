@@ -13,8 +13,12 @@ from group.search import search_users
 from group.groupinvite import create_group
 from group.groupSearch import groups_by_user, group_by_id, get_users_in_group
 from calendars.event import create_event, delete_event, edit_event, get_events
-from bills.billSplit import handle_add_expense
-from bills.transactions import get_transactions
+from bills.refactor import (
+    get_member_balances,
+    get_recent_transactions,
+    create_transaction,
+)
+from bson import ObjectId
 from grocery.grocery import (
     handle_add_grocery,
     get_formatted_groceries,
@@ -210,14 +214,57 @@ def handle_delete_event(group_id, event_id):
     return delete_event(db, group_id, event_id)
 
 
-@app.route("/auth/billSplit", methods=["POST"])
-def add_expense():
-    return handle_add_expense(db)
+@app.route("/api/transactions/<group_id>", methods=["GET"])
+def get_transactions(group_id):
+    try:
+        user_id = request.args.get("user_id")
+        if not user_id:
+            return jsonify({"success": False, "message": "User ID is required"}), 400
+
+        member_balances = get_member_balances(db, group_id, user_id)
+        recent_transactions = get_recent_transactions(db, group_id)
+
+        return jsonify(
+            {
+                "success": True,
+                "member_balances": member_balances,
+                "recent_transactions": recent_transactions,
+            }
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
-@app.route("/api/transactions/<string:group_id>", methods=["GET"])
-def handle_get_transactions(group_id):
-    return get_transactions(db, group_id)
+@app.route("/api/transactions", methods=["POST"])
+def create_transaction_route():
+    try:
+        return create_transaction(db)
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route("/api/users/<group_id>", methods=["GET"])
+def get_group_members(group_id):
+    try:
+        group = db.groups.find_one({"_id": ObjectId(group_id)})
+        if not group:
+            return jsonify({"success": False, "message": "Group not found"}), 404
+
+        members = []
+        for member_id in group["members"]:
+            user = db.users.find_one({"_id": ObjectId(member_id)})
+            if user:
+                members.append(
+                    {
+                        "id": str(user["_id"]),
+                        "email": user.get("email", ""),
+                        "username": user.get("username", ""),  # Always include username
+                    }
+                )
+
+        return jsonify({"success": True, "users": members})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
 @app.route("/api/notifications", methods=["POST"])
