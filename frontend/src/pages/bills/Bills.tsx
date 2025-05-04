@@ -50,16 +50,14 @@ const BillsPage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
-  const [transactionType, setTransactionType] = useState<'request' | 'pay'>(
-    'request',
-  );
+  const [transactionType, setTransactionType] = useState<'request' | 'pay'>('request');
 
   const fetchData = useCallback(async () => {
     try {
       // Fetch transactions and member balances
       const response = await axios.get(
         `${API_BASE_URL}/api/transactions/${groupId}`,
-        { params: { user_id: userId } },
+        { params: { user_id: userId } }
       );
 
       if (response.data.success) {
@@ -71,7 +69,7 @@ const BillsPage: React.FC = () => {
 
       // Fetch group members
       const membersResponse = await axios.get(
-        `${API_BASE_URL}/api/users/${groupId}`,
+        `${API_BASE_URL}/api/users/${groupId}`
       );
 
       if (membersResponse.data.success) {
@@ -110,9 +108,7 @@ const BillsPage: React.FC = () => {
         message.error(response.data.message || 'Failed to create transaction');
       }
     } catch (error: any) {
-      message.error(
-        error.response?.data?.detail || 'Failed to create transaction',
-      );
+      message.error(error.response?.data?.detail || 'Failed to create transaction');
     }
   };
 
@@ -123,15 +119,10 @@ const BillsPage: React.FC = () => {
       {/* Member Balances */}
       <Card
         title="Member Balances"
-        style={{
-          marginBottom: 24,
-          borderRadius: 12,
-          backgroundColor: '#faf6ff',
-          border: '1px solid #e5dcff',
-        }}
+        style={{ marginBottom: 24, borderRadius: 12, backgroundColor: '#faf6ff', border: '1px solid #e5dcff' }}
       >
         {Object.entries(memberBalances).map(([memberId, balance]) => {
-          const member = groupMembers.find((m) => m.id === memberId);
+          const member = groupMembers.find(m => m.id === memberId);
           if (!member) return null;
 
           return (
@@ -149,20 +140,13 @@ const BillsPage: React.FC = () => {
               <Text
                 strong
                 style={{
-                  color:
-                    balance > 0
-                      ? '#52c41a'
-                      : balance < 0
-                        ? '#f5222d'
-                        : '#000000',
+                  color: balance > 0 ? '#52c41a' : balance < 0 ? '#f5222d' : '#000000',
                   fontSize: '0.97em',
                 }}
               >
-                {balance > 0
-                  ? `You owe $${balance.toFixed(2)}`
-                  : balance < 0
-                    ? `Owes you $${Math.abs(balance).toFixed(2)}`
-                    : 'Settled up'}
+                {balance > 0 ? `You owe $${balance.toFixed(2)}` : 
+                 balance < 0 ? `Owes you $${Math.abs(balance).toFixed(2)}` : 
+                 'Settled up'}
               </Text>
             </div>
           );
@@ -172,12 +156,7 @@ const BillsPage: React.FC = () => {
       {/* Transaction History */}
       <Card
         title="Recent Transactions"
-        style={{
-          marginBottom: 24,
-          borderRadius: 12,
-          backgroundColor: '#faf6ff',
-          border: '1px solid #e5dcff',
-        }}
+        style={{ marginBottom: 24, borderRadius: 12, backgroundColor: '#faf6ff', border: '1px solid #e5dcff' }}
       >
         <List
           dataSource={transactions}
@@ -198,8 +177,7 @@ const BillsPage: React.FC = () => {
                   <Text
                     strong
                     style={{
-                      color:
-                        transaction.type === 'request' ? '#f5222d' : '#52c41a',
+                      color: transaction.type === 'request' ? '#f5222d' : '#52c41a',
                       fontSize: '1em',
                     }}
                   >
@@ -215,7 +193,7 @@ const BillsPage: React.FC = () => {
                   }}
                 >
                   <Text style={{ flexBasis: '60%' }}>
-                    {transaction.type === 'request'
+                    {transaction.type === 'request' 
                       ? `${transaction.initiatorUsername} requested from ${transaction.recipientUsername}`
                       : `${transaction.initiatorUsername} paid ${transaction.recipientUsername}`}
                   </Text>
@@ -305,7 +283,7 @@ const BillsPage: React.FC = () => {
           >
             <Select placeholder="Select member">
               {groupMembers
-                .filter((member) => member.id !== userId)
+                .filter(member => member.id !== userId)
                 .map((member) => (
                   <Option key={member.id} value={member.id}>
                     {member.username}

@@ -13,6 +13,20 @@ from group.search import search_users
 from group.groupinvite import create_group
 from group.groupSearch import groups_by_user, group_by_id, get_users_in_group
 from calendars.event import create_event, delete_event, edit_event, get_events
+from bills.refactor import get_member_balances, get_recent_transactions, create_transaction
+from bson import ObjectId
+from typing import List, Dict, Any
+from grocery.grocery import (
+    handle_add_grocery,
+    get_formatted_groceries,
+    handle_delete_grocery,
+    handle_edit_grocery,
+    handle_accept_grocery,
+    grocery_remove_accept,
+)
+
+
+from notifications import list_notifications, respond_invite
 from bills.refactor import (
     get_member_balances,
     get_recent_transactions,
@@ -41,7 +55,44 @@ db = client["DEV"]  # Change "mydatabase" to your database name
 collection = db["TEST"]  # Change "mycollection" to your collection name
 print("MONGO_URI =", os.getenv("MONGO_URI"))
 
+
 # db.users.delete_one({"email": "jianingshi1417@gmail.com"})
+def migrate_database():
+    """Function to add new fields (acceptedBy, purchaseTime) to all grocery items."""
+    try:
+        # Fetch all groups in the groceries collection
+        groups = db.groceries.find()
+
+        for group in groups:
+            group_id = group["_id"]
+
+            # Check if "items" exists in the group
+            if "items" in group:
+                for item_id, item_data in group["items"].items():
+                    # For each item, add the new fields (if they don't exist)
+                    item_content = item_data["content"]
+
+                    if "acceptedBy" not in item_content:
+                        item_content["acceptedBy"] = None  # Default to None
+                    if "purchaseTime" not in item_content:
+                        item_content["purchaseTime"] = None  # Default to None
+
+                    # Update the item in the database
+                    db.groceries.update_one(
+                        {"_id": group_id},
+                        {"$set": {f"items.{item_id}.content": item_content}},
+                    )
+
+        print(
+            "Database migration completed successfully. Fields 'acceptedBy' and 'purchaseTime' added."
+        )
+
+    except Exception as e:
+        print(f"Error during database migration: {str(e)}")
+
+
+# Run the migration function
+# migrate_database()
 
 
 def get_api_base_url():
@@ -218,6 +269,48 @@ def get_group_members(group_id):
         return jsonify({"success": True, "users": members})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route("/api/notifications", methods=["POST"])
+def notifications_list():
+    return list_notifications(db)
+
+
+@app.route("/api/notifications/<string:invite_id>", methods=["PATCH"])
+def notifications_respond(invite_id):
+    return respond_invite(db, invite_id)
+
+
+@app.route("/api/groceryAdd", methods=["POST"])
+def grocery_add():
+    return handle_add_grocery(db)
+
+
+@app.route("/api/groceries/<string:group_id>", methods=["GET"])
+def get_groceries(group_id):
+
+    groceries = get_formatted_groceries(db, group_id)
+    return jsonify(groceries)
+
+
+@app.route("/api/groceryEdit", methods=["PUT"])
+def grocery_edit():
+    return handle_edit_grocery(db)
+
+
+@app.route("/api/groceryAccept", methods=["POST"])
+def grocery_accept():
+    return handle_accept_grocery(db)
+
+
+@app.route("/api/groceryDelete", methods=["DELETE"])
+def grocery_delete():
+    return handle_delete_grocery(db)
+
+
+@app.route("/api/groceryRemoveAcceptance", methods=["PUT"])
+def grocery_remove_acceptance():
+    return grocery_remove_accept(db)
 
 
 if __name__ == "__main__":

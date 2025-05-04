@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+// Calendar.tsx
+
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import CalendarView from '../../components/CalendarView';
 import EventFormModal from '../../components/EventFormModal';
@@ -6,27 +8,25 @@ import { useLocation } from 'react-router-dom';
 import { API_BASE_URL } from '../../App';
 import GroupHeaderBar from './../../components/GroupHeadBar';
 import { message } from 'antd';
+import BottomTabBar from '../../components/BottomTabBar';
 
-// Basic interface for the extended properties of an event
 interface ExtendedProps {
   people: string[];
   description: string;
-  repeat: string; // "None" | "Weekly" | "Biweekly"
+  repeat: string; // e.g., "None", "Weekly", "Biweekly"
   created_by?: string;
 }
 
-// Event interface matching your backend data structure
 export interface EventData {
   _id?: string;
   title: string;
   start: string; // ISO string format
   end: string; // ISO string format
-  group_id: string; // Your group ID
+  group_id: string;
   extendedProps: ExtendedProps;
 }
 
 const Calendar: React.FC = () => {
-  // Replace this with your actual group ID if needed
   const location = useLocation();
   const { userId, groupId } = location.state || {};
   const [events, setEvents] = useState<EventData[]>([]);
@@ -34,10 +34,9 @@ const Calendar: React.FC = () => {
   const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
 
-  // Fetch events from the backend
-  const fetchEvents = async () => {
+  // Wrap fetchEvents with useCallback
+  const fetchEvents = useCallback(async () => {
     try {
-      // Optionally, pass query params for date ranges
       const res = await axios.get<EventData[]>(
         `${API_BASE_URL}/api/events/${groupId}`,
       );
@@ -45,11 +44,11 @@ const Calendar: React.FC = () => {
     } catch (error) {
       console.error('Error fetching events:', error);
     }
-  };
+  }, [groupId]);
 
   useEffect(() => {
     fetchEvents();
-  });
+  }, [fetchEvents]);
 
   // Handle saving (create or update) an event
   const handleSaveEvent = async (
@@ -82,7 +81,6 @@ const Calendar: React.FC = () => {
         );
         messageApi.success(res.data.message || 'Event updated!');
       }
-
       await fetchEvents();
       setShowForm(false);
       setEditingEvent(null);
@@ -106,7 +104,7 @@ const Calendar: React.FC = () => {
     }
   };
 
-  // When an event is clicked on the calendar, open the form in edit mode
+  // When an event is clicked, open the form in edit mode
   const handleEventClick = (clickedEvent: EventData) => {
     setEditingEvent(clickedEvent);
     setShowForm(true);
@@ -119,9 +117,16 @@ const Calendar: React.FC = () => {
   };
 
   return (
-    <>
+    <div
+      style={{
+        position: 'relative', // Allows us to absolutely position BottomTabBar within this container
+        minHeight: '100vh',
+        paddingBottom: '80px', // Reserve space for the BottomTabBar
+      }}
+    >
       {contextHolder}
-      <div style={{ width: '100vw', padding: 0 }}>
+
+      <div style={{ marginBottom: 0 }}>
         <GroupHeaderBar />
       </div>
 
@@ -130,7 +135,7 @@ const Calendar: React.FC = () => {
           width: '100%',
           padding: '0.5rem',
           boxSizing: 'border-box',
-          overflowY: 'auto', // your scrollable content
+          overflowY: 'auto', // Enable scrolling if needed
         }}
       >
         <CalendarView events={events} onEventClick={handleEventClick} />
@@ -140,7 +145,7 @@ const Calendar: React.FC = () => {
         onClick={handleNewEvent}
         style={{
           position: 'fixed',
-          bottom: '3rem',
+          bottom: '4rem', // Adjust position as needed so it doesn't overlap the tab bar
           right: '1rem',
           padding: '0.75rem 1.25rem',
           background: '#9b59b6',
@@ -167,7 +172,19 @@ const Calendar: React.FC = () => {
           }}
         />
       )}
-    </>
+
+      {/* Render the BottomTabBar at the bottom */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }}
+      >
+        <BottomTabBar />
+      </div>
+    </div>
   );
 };
 
